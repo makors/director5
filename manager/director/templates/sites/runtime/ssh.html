@@ -4,9 +4,9 @@
 
 {% block main %}
   <div class="dt-page dt-project-page">
-    <p><a href="{% url 'sites:dashboard' site.id %}">{{ site.name }}</a> / SSH</p>
-    <div class="dt-page-heading"><h1>SSH access</h1></div>
+    {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab="terminal" can_edit=True %}
+    <div class="dt-page-heading"><h2>SSH access</h2></div>
     <p>Open this site's workspace shell from your terminal:</p>
     <pre class="dt-runtime-output">{{ command }}</pre>
     <p class="dt-muted">Generate a one-time password below and enter it when SSH asks. It expires after five minutes and can open one connection.</p>

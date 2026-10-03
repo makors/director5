@@ -10,9 +10,9 @@
     <a class="dt-project-tab" href="{% url 'sites:resource-list' %}">Resources</a>
   </nav>
   {% for operation in page_obj %}
-    <section class="dt-project-block">
+    <section class="dt-project-block dt-operation-card">
       <h2><a class="dt-inline-link" href="{% url 'sites:dashboard' operation.site_id %}">{{ operation.site.name }}</a></h2>
-      <p>{{ operation.kind_label }} · {{ operation.status_label }}</p>
+      <p>{{ operation.kind_label }} · <span {% if operation.status == 'failed' %}class="dt-danger-link"{% endif %}>{{ operation.status_label }}</span></p>
       <details><summary>Actions and diagnostics</summary>
         {% for action in operation.action_set.all %}<h3>{{ action.name }}</h3><p>{% if action.result == True %}Complete{% elif action.result == False %}Failed{% else %}Waiting{% endif %}</p><pre class="dt-code-output">{{ action.message }}</pre>{% endfor %}
       </details>

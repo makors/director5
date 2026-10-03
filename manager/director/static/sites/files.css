@@ -9,7 +9,7 @@
 	margin: 0;
 }
 .dt-file-toolbar .dt-btn-outline {
-	min-height: 30px;
+	min-height: 32px;
 	padding: 5px 9px;
 	font-size: 12px;
 }
@@ -125,8 +125,8 @@
 .dt-file-menu summary {
 	border: 0;
 	border-radius: 4px;
-	width: 28px;
-	height: 28px;
+	width: 32px;
+	height: 32px;
 	background: transparent;
 	cursor: pointer;
 	color: #525252;
@@ -205,7 +205,7 @@
 	tab-size: 4;
 }
 #file-content:focus {
-	outline: 2px solid #a3a3a3;
+	outline: 2px solid #087cfc;
 	outline-offset: -2px;
 }
 .dt-file-editor-footer {
@@ -304,8 +304,9 @@
 	display: flex;
 	align-items: center;
 	border-bottom: 1px solid #e5e5e5;
-	padding-right: 8px;
-	min-height: 40px;
+	padding: 0 8px;
+	gap: 4px;
+	min-height: 61px;
 }
 #file-tabs {
 	display: flex;
@@ -336,7 +337,7 @@
 }
 .dt-file-tab [aria-selected="true"] {
 	color: #171717;
-	box-shadow: inset 0 -2px #171717;
+	box-shadow: inset 0 -2px #087cfc;
 }
 .dt-file-tab button:hover {
 	background: #f5f5f5;
@@ -364,4 +365,84 @@
 #file-code-editor .ace_comment,
 #file-code-editor .ace_operator {
 	color: #4b5563;
+}
+
+.dt-file-selected {
+	background: #eef6ff;
+}
+.dt-file-selected td:first-child {
+	box-shadow: inset 3px 0 #087cfc;
+}
+.dt-file-text-button {
+	min-height: 32px;
+	border-radius: 6px;
+	white-space: nowrap;
+}
+.dt-file-toolbar {
+	min-height: 61px;
+}
+.dt-file-back {
+	display: none;
+}
+.dt-file-panel {
+	scroll-margin-top: 16px;
+}
+#file-preferences-form label:has(input[type="checkbox"]) {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+@media (max-width: 850px) {
+	.dt-file-back {
+		display: block;
+		margin: 8px 8px 0;
+	}
+	.dt-file-workspace-heading {
+		flex-wrap: wrap;
+		padding: 8px;
+	}
+	#file-tabs {
+		flex-basis: 100%;
+	}
+	#file-preferences {
+		margin-left: auto;
+	}
+	.dt-file-toolbar .dt-btn-outline,
+	.dt-file-actions .dt-btn-outline,
+	.dt-file-text-button,
+	.dt-file-tab button,
+	.dt-file-menu button,
+	.dt-file-menu a,
+	.dt-file-toolbar nav button,
+	.dt-file-name {
+		min-height: 44px;
+	}
+	.dt-file-icon-button,
+	.dt-file-menu summary {
+		width: 44px;
+		height: 44px;
+	}
+	.dt-file-table td {
+		padding: 4px 12px;
+	}
+	.dt-file-editor-footer {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		gap: 8px;
+		padding: 12px;
+	}
+	.dt-file-editor-footer label:not(.sr-only) {
+		grid-column: 1 / -1;
+		min-height: 44px;
+	}
+	.dt-file-editor-footer select,
+	.dt-file-dialog select {
+		min-width: 0;
+		min-height: 44px;
+		font-size: 16px;
+	}
+	.dt-file-editor-footer button {
+		min-height: 44px;
+		padding-inline: 10px;
+	}
 }

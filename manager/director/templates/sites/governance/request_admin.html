@@ -23,7 +23,7 @@
               </div>
             </form>
           {% elif entry.request.private_admin_comments %}
-            <p class="dt-project-description"><strong>Private administrator comments:</strong><br>{{ entry.request.private_admin_comments|linebreaksbr }}</p>
+            <p class="dt-project-description"><span class="dt-comment-label">Private administrator comments</span><br>{{ entry.request.private_admin_comments|linebreaksbr }}</p>
           {% endif %}
         </section>
       {% empty %}<p class="dt-muted">No site requests have been submitted.</p>{% endfor %}

@@ -320,8 +320,13 @@ if DEBUG:
     ]
     AUTHENTICATION_BACKENDS.append("django.contrib.auth.backends.ModelBackend")
     # Docker creates IP addresses dynamically; permit its gateway for debug tools.
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+    try:
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    except socket.gaierror:
+        # Local hostnames need not be resolvable outside the Docker environment.
+        pass
+    else:
+        INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 # Tests must never connect to the configured production database.
 if TESTING:

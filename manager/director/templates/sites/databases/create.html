@@ -3,10 +3,11 @@
 {% block title %}Create database · {{ site.name }} · Director{% endblock %}
 
 {% block main %}
-  <div class="dt-page dt-create-page">
-    <a class="dt-back-link" href="{% url 'databases:detail' site.id %}">← Database</a>
-    <header class="dt-project-header"><h1>Create database</h1></header>
+  <div class="dt-page dt-project-page">
+    {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab="database" can_edit=True %}
+    <div class="dt-page-heading"><h2>Create database</h2></div>
+    <a class="dt-back-link" href="{% url 'databases:detail' site.id %}">← Database</a>
     {% if form.fields.host.queryset.exists %}
       <form method="post" data-dt-form class="dt-create-form">
         {% csrf_token %}{{ form.non_field_errors }}

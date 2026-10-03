@@ -89,14 +89,15 @@
     </div>
   {% else %}
     <div class="dt-project-overview">
-      <p class="dt-muted">Runtime: <span data-runtime-status-url="{% url 'sites:runtime_status' site.id %}">Checking…</span></p>
-      {% if site.admin_comments %}
-        <section class="dt-project-block" aria-labelledby="admin-comments-title">
-          <h2 id="admin-comments-title">Administrator notes</h2>
-          <p>{{ site.admin_comments|linebreaksbr }}</p>
-        </section>
-      {% endif %}
       <section class="dt-project-block dt-project-activity" aria-label="Activity" aria-live="polite" aria-atomic="false">
+        <h2>Activity</h2>
+        <p class="dt-muted">Runtime: <span data-runtime-status-url="{% url 'sites:runtime_status' site.id %}">Checking…</span></p>
+        {% if site.admin_comments %}
+          <aside class="dt-project-note" aria-labelledby="admin-comments-title">
+            <h3 id="admin-comments-title">Administrator notes</h3>
+            <p>{{ site.admin_comments|linebreaksbr }}</p>
+          </aside>
+        {% endif %}
         {% if operation %}
           <div class="dt-operation-heading">
             <h2>{{ operation.kind_label }}</h2>
@@ -138,6 +139,7 @@
       </section>
 
       <section class="dt-project-block" aria-label="Site details">
+        <h2>Site details</h2>
         <dl class="dt-project-meta">
           <div><dt>Type</dt><dd>{{ site.get_mode_display }}</dd></div>
           <div><dt>Purpose</dt><dd>{{ site.get_purpose_display }}</dd></div>

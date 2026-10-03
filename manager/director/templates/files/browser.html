@@ -13,7 +13,7 @@
 
 {% block main %}
   <div class="dt-page dt-project-page" id="file-browser" data-workspace-key="{{ request.user.pk }}:{{ site.pk }}" data-editor-assets="{% static 'sites/vendor/ace/' %}">
-    <header class="dt-project-header"><div class="dt-project-identity"><div class="dt-project-title-row"><h1>{{ site.name }}</h1><span class="dt-project-status {% if site.status == 'failed' %}dt-project-status-failed{% endif %}">{{ site.status_label }}</span></div><a class="dt-project-domain" href="{{ site.sites_url }}" target="_blank" rel="noopener noreferrer">{{ site.sites_url|cut:"https://"|cut:"http://" }}</a></div></header>
+    {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab='files' %}
     <div class="dt-page-heading">
       <div><h2 class="dt-file-title">Files</h2><p class="dt-file-help">Website files belong in <code>public/</code>.</p></div>
@@ -22,7 +22,7 @@
     {{ file_endpoints|json_script:"file-endpoints" }}
     <p id="file-message" class="dt-file-message" role="status" aria-live="polite" hidden></p>
     <div class="dt-files-layout">
-      <section class="dt-file-panel" aria-label="Site files">
+      <section class="dt-file-panel" id="file-list-panel" aria-label="Site files" tabindex="-1">
         <div class="dt-file-toolbar">
           <nav id="file-breadcrumbs" aria-label="Folder path"></nav>
           <button type="button" id="file-refresh" class="dt-btn-outline" aria-label="Refresh files">Refresh</button>
@@ -32,7 +32,7 @@
           <button type="button" id="file-mkdir" class="dt-btn-outline">New folder</button>
           <button type="button" id="file-upload" class="dt-btn-outline">Upload</button>
           <input type="file" id="file-upload-input" multiple hidden>
-          <a id="file-folder-download" class="dt-file-link" href="{% url 'sites:files:archive' site.id %}">Download ZIP</a>
+          <a id="file-folder-download" class="dt-btn-outline" href="{% url 'sites:files:archive' site.id %}">Download ZIP</a>
         </div>
         <div class="dt-file-table-scroll">
           <table class="dt-file-table">
@@ -41,7 +41,8 @@
           </table>
         </div>
       </section>
-      <section class="dt-file-panel dt-file-editor" aria-label="Text editor">
+      <section class="dt-file-panel dt-file-editor" id="file-workspace" aria-label="Text editor" tabindex="-1">
+        <button type="button" id="file-back" class="dt-file-back dt-file-text-button" hidden>Back to files</button>
         <div class="dt-file-workspace-heading"><div id="file-tabs" role="tablist" aria-label="Open files" hidden></div><button type="button" id="file-close" class="dt-file-text-button" hidden>Close file</button><button type="button" id="file-preferences" class="dt-file-text-button" aria-label="Editor preferences">Preferences</button></div>
         <div id="file-editor-empty" class="dt-file-empty"><h2>Open a file</h2><p>Select a text file to edit it here. Binary files are available to download.</p></div>
         <div id="file-editor-panel" role="tabpanel" hidden><form id="file-editor-form">

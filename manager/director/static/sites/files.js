@@ -198,9 +198,11 @@
 			state.files.delete(path);
 		}
 		if (!state.files.has(state.file)) state.file = state.files.keys().next().value || null;
-		if (state.file) activate(state.file);
+		if (state.file) activate(state.file, false);
 		else {
 			el("file-editor-panel").hidden = true;
+			el("file-back").hidden = true;
+			selectedRow();
 			el("file-editor-empty").hidden = false;
 			tabs();
 			workspace();
@@ -263,7 +265,16 @@
 		el("file-content").wrap = prefs.wrap ? "soft" : "off";
 		editor?.resize();
 	}
-	function activate(path) {
+	function selectedRow() {
+		for (const row of el("file-list").querySelectorAll("[data-path]")) {
+			const selected = row.dataset.path === state.file;
+			row.classList.toggle("dt-file-selected", selected);
+			const button = row.querySelector(".dt-file-name");
+			if (selected) button.setAttribute("aria-current", "true");
+			else button.removeAttribute("aria-current");
+		}
+	}
+	function activate(path, reveal = true) {
 		const file = state.files.get(path);
 		if (!file) return;
 		if (!editor && active()) active().content = el("file-content").value;
@@ -279,7 +290,14 @@
 		tabs();
 		workspace();
 		applyPreferences();
-		editor?.focus();
+		selectedRow();
+		el("file-back").hidden = false;
+		if (reveal) {
+			if (window.matchMedia("(max-width: 850px)").matches) {
+				el("file-workspace").focus({ preventScroll: true });
+				el("file-workspace").scrollIntoView({ block: "start" });
+			} else editor?.focus();
+		}
 	}
 	function breadcrumbs() {
 		const crumb = el("file-breadcrumbs");
@@ -317,6 +335,7 @@
 		list.replaceChildren();
 		for (const entry of listing.entries) {
 			const row = node("tr");
+			row.dataset.path = entry.path;
 			const name = node("td");
 			const button = node("button");
 			button.type = "button";
@@ -358,7 +377,7 @@
 						if (state.file === path) state.file = next;
 						if (file.language === "auto") file.session?.setMode(`ace/mode/${syntax(next)}`);
 					}
-					if (state.file) activate(state.file);
+					if (state.file) activate(state.file, false);
 					await load();
 					message("Moved.");
 				});
@@ -407,6 +426,7 @@
 			row.append(name, bytes, actions);
 			list.append(row);
 		}
+		selectedRow();
 		if (!listing.entries.length) {
 			const row = node("tr");
 			const cell = node("td", "This folder is empty.");
@@ -415,9 +435,9 @@
 			list.append(row);
 		}
 	}
-	async function open(path, force = false) {
+	async function open(path, force = false, reveal = true) {
 		if (!force && state.files.has(path)) {
-			activate(path);
+			activate(path, reveal);
 			return;
 		}
 		const file = await api("read", { path });
@@ -439,9 +459,13 @@
 			tabs();
 			if (active() === record) el("file-save-state").textContent = "Unsaved changes";
 		});
-		activate(path);
+		activate(path, reveal);
 		message("");
 	}
+	el("file-back").onclick = () => {
+		el("file-list-panel").focus({ preventScroll: true });
+		el("file-list-panel").scrollIntoView({ block: "start" });
+	};
 	el("file-refresh").onclick = () => run(() => load());
 	el("file-new").onclick = () =>
 		run(async () => {
@@ -574,12 +598,12 @@
 			for (const path of previous.paths.slice(0, 20)) {
 				if (typeof path !== "string") continue;
 				try {
-					await open(path);
+					await open(path, false, false);
 				} catch {
 					/* Closed or unavailable files are omitted. */
 				}
 			}
-			if (state.files.has(previous.active)) activate(previous.active);
+			if (state.files.has(previous.active)) activate(previous.active, false);
 		}
 	});
 })();

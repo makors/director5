@@ -25,7 +25,9 @@
             <div class="dt-account-menu">
               <p>Signed in as <strong>{{ user.username }}</strong></p>
               {% include "sites/governance/navigation.html" %}
+              <hr>
               <a href="{% url 'sites:create-personal' %}">Personal site</a>
+              <hr>
               {% if user.is_superuser %}
                 <a href="{% url 'sites:management' %}">Management</a>
                 <a href="{% url 'sites:image-catalog' %}">Images</a>
@@ -33,7 +35,9 @@
                 <a href="{% url 'sites:mail-history' %}">Email</a>
               {% endif %}
               {% if user.is_staff %}<a href="{% url 'admin:index' %}">Administration</a>{% endif %}
+              <hr>
               <a href="{% url 'sites:docs-index' %}">Documentation</a>
+              <hr>
               <form method="post" action="{% url 'auth:logout' %}">
                 {% csrf_token %}
                 <button type="submit">Sign out</button>

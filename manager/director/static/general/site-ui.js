@@ -1,6 +1,31 @@
 (() => {
 	const pending = new Map();
 	const checkedForms = new WeakSet();
+	const preparedTabs = new WeakSet();
+	function revealActiveTabs() {
+		for (const nav of document.querySelectorAll(".dt-project-tabs")) {
+			if (!preparedTabs.has(nav)) {
+				preparedTabs.add(nav);
+				const active = nav.querySelector('[aria-current="page"]');
+				if (active)
+					nav.scrollLeft = Math.max(
+						0,
+						active.offsetLeft - nav.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2,
+					);
+				const update = () => {
+					nav.dataset.overflow = String(nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 2);
+					nav.dataset.scrolled = String(nav.scrollLeft > 2);
+				};
+				nav.addEventListener("scroll", update, { passive: true });
+				new ResizeObserver(update).observe(nav);
+				update();
+			}
+		}
+	}
+	document.addEventListener("htmx:afterSettle", revealActiveTabs);
+	document.addEventListener("htmx:wsAfterMessage", revealActiveTabs);
+	window.addEventListener("pageshow", revealActiveTabs);
+	revealActiveTabs();
 
 	if (window.htmx) document.documentElement.classList.add("dt-enhanced");
 

@@ -4,16 +4,9 @@
 
 {% block main %}
   <div class="dt-page dt-project-page">
-    <header class="dt-project-header">
-      <div class="dt-project-identity">
-        <div class="dt-project-title-row">
-          <h1>{{ site.name }}</h1>
-          <span class="dt-project-status {% if site.status == 'failed' %}dt-project-status-failed{% endif %}">{{ site.status_label }}</span>
-        </div>
-        <a class="dt-project-domain" href="{{ site.sites_url }}" target="_blank" rel="noopener noreferrer">{{ site.sites_url|cut:"https://"|cut:"http://" }}</a>
-      </div>
-    </header>
+    {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab='settings' %}
+    <div class="dt-page-heading"><h2>Settings</h2></div>
     <div class="dt-project-settings">
       {% if operation %}
         <p class="dt-project-notice">{{ operation.kind_label }} · {{ operation.status_label }}. <a class="dt-inline-link" href="{% url 'sites:dashboard' site.id %}">View operation</a></p>
@@ -36,7 +29,7 @@
         <section class="dt-project-block" aria-labelledby="settings-type-heading">
           <h2 id="settings-type-heading">Type</h2>
           {% include "sites/settings_form.html" with form=type_form section="type" action_name="sites:settings-type" submit_label="Save and deploy" %}
-          <p class="dt-setting-help"><a class="dt-inline-link" href="{% url 'sites:image-select' site.id %}">Configure Docker image</a>{% if request.user.is_superuser %} · <a class="dt-inline-link" href="{% url 'sites:resource-edit' site.id %}">Edit resource limits</a>{% endif %}</p>
+          <p class="dt-setting-help"><a class="dt-btn-outline" href="{% url 'sites:image-select' site.id %}">Configure Docker image</a>{% if request.user.is_superuser %} · <a class="dt-inline-link" href="{% url 'sites:resource-edit' site.id %}">Edit resource limits</a>{% endif %}</p>
         </section>
       {% else %}
         <section class="dt-project-block" aria-labelledby="settings-meta-heading">

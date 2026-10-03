@@ -3,10 +3,10 @@
 {% block title %}Database · {{ site.name }} · Director{% endblock %}
 
 {% block main %}
-  <div class="dt-page">
-    <a class="dt-back-link" href="{% url 'sites:dashboard' site.id %}">← {{ site.name }}</a>
-    <header class="dt-project-header"><h1>Database</h1></header>
+  <div class="dt-page dt-project-page">
+    {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab="database" can_edit=True %}
+    <div class="dt-page-heading"><h2>Database</h2></div>
     {% if database %}
       <section class="dt-project-block">
         <h2>{{ database.host.get_dbms_display }}</h2>
@@ -18,10 +18,10 @@
           <div><dt>Username</dt><dd>{{ database.username }}</dd></div>
         </dl>
         {% if database.provisioned %}
-          <div class="dt-form-field"><label for="database-url">Connection URL</label><input id="database-url" class="dt-input" value="{{ database.redacted_db_url }}" readonly></div>
+          <div class="dt-form-field"><label for="database-url">Connection URL</label><input id="database-url" class="dt-input dt-code-input" value="{{ database.redacted_db_url }}" readonly></div>
           <details><summary>Show connection credentials</summary>
             <div class="dt-form-field"><label for="database-password">Password</label><input id="database-password" class="dt-input" value="{{ database.password }}" readonly></div>
-            <div class="dt-form-field"><label for="database-full-url">Full connection URL</label><input id="database-full-url" class="dt-input" value="{{ connection_url }}" readonly></div>
+            <div class="dt-form-field"><label for="database-full-url">Full connection URL</label><input id="database-full-url" class="dt-input dt-code-input" value="{{ connection_url }}" readonly></div>
           </details>
           <p class="dt-setting-help">Applications receive the connection through <code>DIRECTOR_DATABASE_URL</code> and <code>DATABASE_URL</code>.</p>
           <div class="dt-form-actions">

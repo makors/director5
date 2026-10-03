@@ -3,7 +3,7 @@
 {% block title %}Images · Director{% endblock %}
 
 {% block main %}
-  <div class="dt-page">
+  <div class="dt-page dt-catalog">
     <div class="dt-page-heading"><h1>Images</h1></div>
     <p class="dt-muted">Approved base images and reusable setup commands. Changes take effect when a site is rebuilt.</p>
     <div class="dt-form-actions"><a class="dt-btn-primary" href="{% url 'sites:image-create' %}">Add image</a></div>
@@ -18,7 +18,7 @@
           </div>
           <div class="dt-form-actions">
             <a class="dt-inline-link" href="{% url 'sites:image-edit' image.pk %}" aria-label="Edit {{ image.friendly_name|default:image.name }}">Edit</a>
-            <a class="dt-inline-link" href="{% url 'sites:image-delete' image.pk %}" aria-label="Delete {{ image.friendly_name|default:image.name }}">Delete</a>
+            <a class="dt-inline-link dt-danger-link" href="{% url 'sites:image-delete' image.pk %}" aria-label="Delete {{ image.friendly_name|default:image.name }}">Delete</a>
           </div>
         </div>
       {% empty %}
@@ -27,13 +27,13 @@
     </section>
     <section class="dt-project-block" aria-labelledby="commands-heading">
       <h2 id="commands-heading">Setup commands</h2>
-      <a class="dt-inline-link" href="{% url 'sites:setup-create' %}">Add setup command</a>
+      <a class="dt-btn-outline" href="{% url 'sites:setup-create' %}">Add setup command</a>
       {% for command in setup_commands %}
         <div class="dt-setting-row">
           <p>{{ command.name }} <span class="dt-muted">· Order {{ command.order }}</span></p>
           <div class="dt-form-actions">
             <a class="dt-inline-link" href="{% url 'sites:setup-edit' command.pk %}" aria-label="Edit {{ command.name }}">Edit</a>
-            <a class="dt-inline-link" href="{% url 'sites:setup-delete' command.pk %}" aria-label="Delete {{ command.name }}">Delete</a>
+            <a class="dt-inline-link dt-danger-link" href="{% url 'sites:setup-delete' command.pk %}" aria-label="Delete {{ command.name }}">Delete</a>
           </div>
         </div>
       {% empty %}<p class="dt-muted">No reusable setup commands.</p>{% endfor %}

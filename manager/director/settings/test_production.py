@@ -1,5 +1,6 @@
 """Deployment settings must override development defaults before Django starts."""
 
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -64,6 +65,16 @@ def test_secret_import_errors_fail_startup(monkeypatch):
     namespace = {"__file__": str(settings_path), "__package__": "director.settings"}
     with pytest.raises(ModuleNotFoundError, match="Missing production dependency"):
         exec(compile(settings_path.read_text(), str(settings_path), "exec"), namespace)
+
+
+def test_development_settings_allow_unresolvable_local_hostname(monkeypatch):
+    def unresolved_hostname(hostname):
+        raise socket.gaierror("Local hostname is not registered in DNS")
+
+    monkeypatch.setattr(socket, "gethostbyname_ex", unresolved_hostname)
+    development = load_settings(monkeypatch, DEBUG=True, INTERNAL_IPS=["127.0.0.1", "10.0.0.5"])
+    assert development["INTERNAL_IPS"] == ["127.0.0.1", "10.0.0.5"]
+    assert "django.contrib.auth.backends.ModelBackend" in development["AUTHENTICATION_BACKENDS"]
 
 
 def test_production_django_boots_without_development_routes():

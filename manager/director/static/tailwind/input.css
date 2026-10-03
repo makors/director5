@@ -117,9 +117,12 @@
 	--dt-ink: #171717;
 	--dt-muted: #666;
 	--dt-border: #e5e5e5;
-	--dt-focus: #0070f3;
+	--dt-brand: #087cfc;
+	--dt-brand-strong: #066bd7;
+	--dt-brand-tint: #eef6ff;
+	--dt-focus: var(--dt-brand);
 	--dt-danger: #b91c1c;
-	--dt-radius: 4px;
+	--dt-radius: 6px;
 }
 body {
 	margin: 0;
@@ -337,13 +340,13 @@ main:focus {
 	text-decoration: none;
 }
 .dt-btn-primary {
-	background: var(--dt-ink);
-	border-color: var(--dt-ink);
+	background: var(--dt-brand-strong);
+	border-color: var(--dt-brand-strong);
 	color: #fff;
 }
 .dt-btn-primary:hover:not(:disabled) {
-	background: #333;
-	border-color: #333;
+	background: #0559b3;
+	border-color: #0559b3;
 }
 .dt-btn-outline {
 	border-color: #d4d4d4;
@@ -564,7 +567,7 @@ main:focus {
 .dt-search input:focus,
 .dt-filter-select:focus {
 	border-color: #a3a3a3;
-	outline: 2px solid #0070f326;
+	outline: 2px solid #087cfc26;
 	outline-offset: 1px;
 }
 .dt-form-field input:not([type="radio"]):focus-visible,
@@ -599,7 +602,7 @@ main:focus {
 }
 .dt-form-field input[type="radio"] {
 	color: var(--dt-ink);
-	accent-color: var(--dt-ink);
+	accent-color: var(--dt-brand);
 }
 .dt-form-actions {
 	display: flex;
@@ -751,7 +754,7 @@ main:focus {
 	font-size: 13px;
 }
 .dt-project-tab[aria-current="page"] {
-	border-bottom-color: var(--dt-ink);
+	border-bottom-color: var(--dt-brand);
 	color: var(--dt-ink);
 }
 .dt-project-tab:hover {
@@ -888,16 +891,16 @@ main:focus {
 	height: 4px;
 	border: 0;
 	background: #ebebeb;
-	accent-color: var(--dt-ink);
+	accent-color: var(--dt-brand);
 }
 .dt-progress::-webkit-progress-bar {
 	background: #ebebeb;
 }
 .dt-progress::-webkit-progress-value {
-	background: var(--dt-ink);
+	background: var(--dt-brand);
 }
 .dt-progress::-moz-progress-bar {
-	background: var(--dt-ink);
+	background: var(--dt-brand);
 }
 .dt-operation-list {
 	margin-top: 16px;
@@ -1121,4 +1124,297 @@ main:focus {
 		transition-duration: .01ms !important;
 		animation-duration: .01ms !important;
 	}
+}
+
+/* Shared content hierarchy and Director identity. */
+.dt-page-heading h1,
+.dt-project-title-row h1 {
+	font-weight: 600;
+}
+.dt-page-title {
+	font-size: 18px;
+	font-weight: 600;
+	margin-bottom: 16px;
+}
+.dt-project-block {
+	padding: 20px;
+	border: 1px solid var(--dt-border);
+	border-radius: 8px;
+	background: #fff;
+}
+.dt-project-block > h2,
+.dt-project-block > .dt-section-heading h2 {
+	font-size: 16px;
+	font-weight: 600;
+	margin-bottom: 16px;
+}
+.dt-page > .dt-project-block {
+	margin-top: 24px;
+}
+.dt-project-settings .dt-project-block + .dt-project-block {
+	padding-top: 20px;
+}
+.dt-project-block > .dt-muted + form,
+.dt-project-block > details + form {
+	margin-top: 16px;
+}
+.dt-project-block .dt-form-field {
+	max-width: 680px;
+}
+.dt-project-block > .dt-project-meta + .dt-form-field {
+	margin-top: 20px;
+}
+.dt-project-block details > div:first-of-type,
+.dt-project-block details > form,
+.dt-project-block details > p {
+	margin-top: 16px;
+}
+.dt-project-block > .dt-setting-help + form {
+	margin-top: 20px;
+}
+.dt-project-block > .dt-setting-help {
+	margin-bottom: 16px;
+}
+.dt-project-block > form > .dt-form-field:first-child {
+	margin-top: 16px;
+}
+.dt-project-delete summary {
+	color: var(--dt-danger);
+	cursor: pointer;
+}
+.dt-project-delete {
+	border-color: #efcccc;
+}
+.dt-project-activity > .dt-muted {
+	margin-bottom: 16px;
+}
+.dt-project-note {
+	padding: 12px 16px;
+	margin: 16px 0;
+	background: var(--dt-bg);
+	border-radius: 6px;
+}
+.dt-project-note h3 {
+	font-size: 13px;
+	font-weight: 500;
+	margin-bottom: 4px;
+}
+.dt-section-gap {
+	margin-top: 16px;
+}
+.dt-runtime-terminal {
+	overflow: hidden;
+	box-sizing: border-box;
+	background: #fff;
+	margin-top: 16px;
+}
+.dt-site-table {
+	border: 1px solid var(--dt-border);
+	border-radius: 8px;
+	overflow: hidden;
+}
+.dt-site-table-heading {
+	padding: 10px 16px;
+}
+.dt-site-row {
+	padding: 14px 16px;
+}
+.dt-site-list li:last-child {
+	border-bottom: 0;
+}
+.dt-site-name p {
+	font-size: 12px;
+}
+.dt-status::before,
+.dt-project-status::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #a3a3a3;
+	flex-shrink: 0;
+}
+.dt-status-success::before,
+.dt-project-status[data-status="ready"]::before {
+	background: #16a34a;
+}
+.dt-status-danger::before,
+.dt-project-status-failed::before {
+	background: var(--dt-danger);
+}
+.dt-status-warning::before {
+	background: #b45309;
+}
+.dt-form-field select[multiple] {
+	min-height: 128px;
+}
+.dt-form-field label:has(input[type="checkbox"]) {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	cursor: pointer;
+}
+.dt-form-field input[type="checkbox"] {
+	flex-shrink: 0;
+	margin-top: 3px;
+	accent-color: var(--dt-brand);
+}
+.dt-form-field input[type="radio"] {
+	color: var(--dt-brand);
+}
+.dt-project-tabs {
+	scroll-padding-inline: 20px;
+}
+.dt-project-tabs[data-overflow="true"] {
+	mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
+}
+.dt-project-tab[aria-current="page"] {
+	font-weight: 500;
+}
+.dt-account-menu {
+	border-radius: 8px;
+	box-shadow: 0 4px 16px #00000014;
+	max-width: calc(100vw - 32px);
+	max-height: calc(100dvh - 80px);
+	overflow-y: auto;
+}
+.dt-account-menu hr {
+	margin: 4px 0;
+	border-color: var(--dt-border);
+}
+.dt-account summary {
+	max-width: 260px;
+}
+.dt-catalog .dt-setting-row + .dt-setting-row {
+	border-top: 1px solid var(--dt-border);
+	padding-top: 16px;
+	margin-top: 16px;
+}
+.dt-catalog .dt-setting-row .dt-form-actions {
+	margin-top: 0;
+	flex-shrink: 0;
+}
+.dt-danger-link {
+	color: var(--dt-danger);
+}
+.dt-operation-card h2 a {
+	color: var(--dt-ink);
+	font-size: 16px;
+	font-weight: 600;
+}
+.dt-operation-card > p {
+	margin-bottom: 16px;
+}
+.dt-operation-card form {
+	max-width: 360px;
+}
+.dt-section-heading {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+.dt-state-label {
+	font-size: 12px;
+	font-weight: 500;
+	padding: 3px 8px;
+	border-radius: 5px;
+	background: #f5f5f5;
+}
+.dt-state-label[data-pending="true"] {
+	background: #fffbeb;
+	color: #92400e;
+}
+.dt-comment-label {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--dt-muted);
+}
+.dt-form-page > form {
+	margin-top: 24px;
+}
+@media (max-width: 640px) {
+	.dt-project-block {
+		padding: 16px;
+	}
+	.dt-project-settings .dt-project-block + .dt-project-block {
+		padding-top: 16px;
+	}
+	.dt-project-actions {
+		width: 100%;
+	}
+	.dt-project-actions form,
+	.dt-project-actions .dt-btn-primary {
+		width: 100%;
+	}
+	.dt-site-row {
+		padding: 16px;
+	}
+	.dt-account summary {
+		max-width: min(50vw, 220px);
+	}
+	.dt-nav {
+		flex-wrap: wrap;
+		gap: 8px;
+		padding: 6px 16px;
+	}
+	.dt-nav-end {
+		gap: 8px;
+	}
+	.dt-nav-site.dt-site-breadcrumb {
+		display: none;
+	}
+	.dt-account-menu {
+		max-height: calc(100dvh - 100px);
+	}
+	.dt-form-field input:not([type="radio"]):not([type="checkbox"]),
+	.dt-form-field textarea,
+	.dt-form-field select {
+		font-size: 16px;
+	}
+	.dt-btn-primary,
+	.dt-btn-outline,
+	.dt-btn-danger,
+	.dt-filter-select,
+	.dt-search input {
+		min-height: 44px;
+	}
+	.dt-setting-row .dt-form-actions {
+		flex-wrap: wrap;
+	}
+}
+@media (max-width: 420px) {
+	.dt-docs-link {
+		display: none;
+	}
+}
+
+.dt-page-heading h2 {
+	font-size: 18px;
+	font-weight: 600;
+}
+.dt-terminal-ssh-link {
+	margin-top: 16px;
+}
+
+.dt-form-field input.dt-code-input {
+	font-family: "Geist Mono", monospace;
+	font-size: 13px;
+}
+.dt-settings-access-list li {
+	padding: 10px 0;
+	border-bottom: 1px solid var(--dt-border);
+}
+.dt-project-tabs[data-scrolled="true"][data-overflow="false"] {
+	mask-image: linear-gradient(to right, transparent, #000 14px);
+}
+.dt-project-tabs[data-scrolled="true"][data-overflow="true"] {
+	mask-image: linear-gradient(
+		to right,
+		transparent,
+		#000 14px,
+		#000 calc(100% - 18px),
+		transparent
+	);
 }

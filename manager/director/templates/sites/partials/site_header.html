@@ -1,0 +1,9 @@
+    <header class="dt-project-header">
+      <div class="dt-project-identity">
+        <div class="dt-project-title-row">
+          <h1>{{ site.name }}</h1>
+          <span data-status="{{ site.status }}" class="dt-project-status {% if site.status == 'failed' %}dt-project-status-failed{% endif %}">{{ site.status_label }}</span>
+        </div>
+        <a class="dt-project-domain" href="{{ site.sites_url }}" target="_blank" rel="noopener noreferrer">{{ site.sites_url|cut:"https://"|cut:"http://" }}</a>
+      </div>
+    </header>

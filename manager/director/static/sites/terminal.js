@@ -4,6 +4,7 @@
 	const connectButton = form.querySelector('button[type="submit"]');
 	const disconnectButton = document.getElementById("terminal-disconnect");
 	const status = document.getElementById("terminal-status");
+	const guidance = document.getElementById("terminal-guidance");
 	const terminal = new Terminal({
 		fontFamily: '"Geist Mono", monospace',
 		fontSize: 14,
@@ -51,6 +52,7 @@
 		if (socket || connectButton.disabled) return;
 		connectButton.disabled = true;
 		status.textContent = "Connecting…";
+		guidance.hidden = true;
 		try {
 			const response = await fetch(form.action, {
 				method: "POST",
@@ -92,11 +94,14 @@
 				socket = null;
 				connectButton.disabled = false;
 				disconnectButton.disabled = true;
+				guidance.hidden = false;
+				guidance.textContent = "Select Connect to start a new terminal session.";
 			};
 		} catch (error) {
 			socket = null;
 			connectButton.disabled = false;
 			status.textContent = error.message || "The terminal connection failed.";
+			guidance.hidden = false;
 		}
 	});
 })();

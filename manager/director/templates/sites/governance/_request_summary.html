@@ -1,4 +1,4 @@
-<h2 id="request-{{ entry.request.id }}">{{ entry.request.activity }}</h2>
+<div class="dt-section-heading"><h2 id="request-{{ entry.request.id }}">{{ entry.request.activity }}</h2><span class="dt-state-label" data-pending="{{ entry.form|yesno:'true,false' }}">{{ entry.admin_status }}</span></div>
 <p class="dt-muted mt-2">Requested by {{ entry.request.user.full_name|default:entry.request.user.username }} · <time datetime="{{ entry.request.request_date|date:'c' }}">{{ entry.request.request_date|date:"M j, Y" }}</time></p>
 <dl class="dt-project-meta mt-4">
   <div><dt>Teacher</dt><dd>{{ entry.request.teacher.full_name|default:entry.request.teacher.username }}</dd></div>
@@ -7,5 +7,5 @@
 </dl>
 {% if entry.request.extra_information %}<p class="dt-project-description">{{ entry.request.extra_information|linebreaksbr }}</p>{% endif %}
 {% if entry.request.admin_comments %}
-  <p class="dt-project-description"><strong>Administrator comments:</strong><br>{{ entry.request.admin_comments|linebreaksbr }}</p>
+  <p class="dt-project-description"><span class="dt-comment-label">Administrator comments</span><br>{{ entry.request.admin_comments|linebreaksbr }}</p>
 {% endif %}
