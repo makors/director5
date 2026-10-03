@@ -42,7 +42,8 @@ module.exports = {
 			},
 		},
 		fontFamily: {
-			sans: ["Inter", "sans-serif"],
+			sans: ["Geist", "sans-serif"],
+			mono: ["Geist Mono", "monospace"],
 		},
 	},
 	plugins: [

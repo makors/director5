@@ -1,0 +1,42 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Images · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading"><h1>Images</h1></div>
+    <p class="dt-muted">Approved base images and reusable setup commands. Changes take effect when a site is rebuilt.</p>
+    <div class="dt-form-actions"><a class="dt-btn-primary" href="{% url 'sites:image-create' %}">Add image</a></div>
+    <section class="dt-project-block" aria-labelledby="images-heading">
+      <h2 id="images-heading">Base images</h2>
+      {% for image in images %}
+        <div class="dt-setting-row">
+          <div>
+            <p><strong>{{ image.friendly_name|default:image.name }}</strong> · {% if image.is_user_visible %}Approved{% else %}Administrator only{% endif %}</p>
+            <p class="dt-muted">{{ image.name }}</p>
+            {% if image.description %}<p>{{ image.description }}</p>{% endif %}
+          </div>
+          <div class="dt-form-actions">
+            <a class="dt-inline-link" href="{% url 'sites:image-edit' image.pk %}" aria-label="Edit {{ image.friendly_name|default:image.name }}">Edit</a>
+            <a class="dt-inline-link" href="{% url 'sites:image-delete' image.pk %}" aria-label="Delete {{ image.friendly_name|default:image.name }}">Delete</a>
+          </div>
+        </div>
+      {% empty %}
+        <p class="dt-muted">No images configured. Sites can use their own Dockerfile.</p>
+      {% endfor %}
+    </section>
+    <section class="dt-project-block" aria-labelledby="commands-heading">
+      <h2 id="commands-heading">Setup commands</h2>
+      <a class="dt-inline-link" href="{% url 'sites:setup-create' %}">Add setup command</a>
+      {% for command in setup_commands %}
+        <div class="dt-setting-row">
+          <p>{{ command.name }} <span class="dt-muted">· Order {{ command.order }}</span></p>
+          <div class="dt-form-actions">
+            <a class="dt-inline-link" href="{% url 'sites:setup-edit' command.pk %}" aria-label="Edit {{ command.name }}">Edit</a>
+            <a class="dt-inline-link" href="{% url 'sites:setup-delete' command.pk %}" aria-label="Delete {{ command.name }}">Delete</a>
+          </div>
+        </div>
+      {% empty %}<p class="dt-muted">No reusable setup commands.</p>{% endfor %}
+    </section>
+  </div>
+{% endblock %}

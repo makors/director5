@@ -1,0 +1,32 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Process site requests · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading"><h1>Process site requests</h1></div>
+    <p class="dt-muted mb-6">Review teacher-approved requests. Create approved sites separately.</p>
+    <div class="dt-project-settings">
+      {% for entry in requests %}
+        <section class="dt-project-block" aria-labelledby="request-{{ entry.request.id }}">
+          {% include "sites/governance/_request_summary.html" %}
+          {% if entry.form %}
+            <form method="post" action="{% url 'sites:request-admin' %}" data-dt-form class="mt-4" aria-labelledby="request-{{ entry.request.id }}">
+              {% csrf_token %}
+              <input type="hidden" name="request" value="{{ entry.request.id }}">
+              {% if entry.form.action.errors %}<div class="dt-error-list" role="alert">{{ entry.form.action.errors }}</div>{% endif %}
+              {% with field=entry.form.admin_comments %}{% include "sites/governance/_form_field.html" %}{% endwith %}
+              {% with field=entry.form.private_admin_comments %}{% include "sites/governance/_form_field.html" %}{% endwith %}
+              <div class="dt-form-actions">
+                <button type="submit" class="dt-btn-primary" name="action" value="accept">Mark processed</button>
+                <button type="submit" class="dt-btn-outline" name="action" value="reject">Reject</button>
+              </div>
+            </form>
+          {% elif entry.request.private_admin_comments %}
+            <p class="dt-project-description"><strong>Private administrator comments:</strong><br>{{ entry.request.private_admin_comments|linebreaksbr }}</p>
+          {% endif %}
+        </section>
+      {% empty %}<p class="dt-muted">No site requests have been submitted.</p>{% endfor %}
+    </div>
+  </div>
+{% endblock %}

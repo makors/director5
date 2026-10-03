@@ -5,6 +5,7 @@ description = "A next generation website hosting platform"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+  "asyncssh>=2.20.0",
   "celery>=5.4.0",
   "channels-redis>=4.2.1",
   "channels[daphne]>=4.2.0",
@@ -17,13 +18,16 @@ dependencies = [
   "fastapi[standard]>=0.115.0",
   "heroicons[django]>=2.8.0",
   "jinja2>=3.1.4",
+  "markdown-it-py>=3.0",
   "pillow>=11.0.0",
   "psycopg[binary]>3.1.8",
   "pydantic>=2.9.2",
+  "pymysql>=1.1.1",
   "redis>=5.2.1",
   "requests>=2.32.3",
   "social-auth-app-django>=5.4.2",
   "typing-extensions>=4.12",
+  "websockets>=14.0",
 ]
 
 [dependency-groups]
@@ -31,6 +35,7 @@ lint = [
   "django-stubs>=5.1.0",
   "mypy>=1.11.2",
   "pre-commit>=3.8.0",
+  "types-PyMySQL",
   "types-requests>=2.32.0.20241016",
 ]
 test = [

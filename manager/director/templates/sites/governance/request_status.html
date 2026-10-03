@@ -1,0 +1,21 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Site requests · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading">
+      <h1>Site requests</h1>
+      <a class="dt-btn-primary" href="{% url 'sites:request-create' %}">Request a site</a>
+    </div>
+    <div class="dt-project-settings">
+      {% for entry in requests %}
+        <section class="dt-project-block" aria-labelledby="request-{{ entry.request.id }}">
+          {% include "sites/governance/_request_summary.html" %}
+        </section>
+      {% empty %}
+        <p class="dt-muted">You have not submitted any site requests.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

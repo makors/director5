@@ -15,22 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from debug_toolbar.toolbar import debug_toolbar_urls
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
 urlpatterns = [
+    path(
+        "dashboard/<int:site_id>/database/",
+        include("director.apps.sites.database_urls", namespace="databases"),
+    ),
     path("", include("director.apps.sites.urls", namespace="sites")),
     path("", include("director.apps.marketplace.urls", namespace="marketplace")),
     path("admin/", admin.site.urls),
     path("accounts/", include("director.apps.auth.urls", namespace="auth")),
     path("social-auth/", include("social_django.urls", namespace="social")),
-    path("__reload__/", include("django_browser_reload.urls")),
 ]
 
 if settings.DEBUG:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+
+    urlpatterns.append(path("__reload__/", include("django_browser_reload.urls")))
     urlpatterns += (
         path(
             "components.html",

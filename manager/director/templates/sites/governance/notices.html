@@ -1,0 +1,6 @@
+{% if is_graduating_soon or homepage_banner %}
+  <div class="dt-message mb-6" role="status">
+    {% if is_graduating_soon %}<p>Please remember to download any important data from your Director sites before you graduate.</p>{% endif %}
+    {% if homepage_banner %}<div>{{ homepage_banner|safe }}</div>{% endif %}
+  </div>
+{% endif %}

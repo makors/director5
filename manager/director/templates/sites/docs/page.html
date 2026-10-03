@@ -1,0 +1,17 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}{{ doc_title }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading"><h1>{{ doc_title }}</h1></div>
+    {% include "sites/docs/_search.html" %}
+    <div class="max-w-3xl space-y-4 break-words [&_a]:underline [&_h2]:font-medium [&_h3]:font-medium [&_ol]:list-decimal [&_ol]:pl-5 [&_pre]:overflow-auto [&_pre]:border [&_pre]:bg-white [&_pre]:p-3 [&_pre]:text-xs [&_ul]:list-disc [&_ul]:pl-5">{{ doc_html|safe }}</div>
+    <nav class="mt-8 border-t pt-6" aria-label="Documentation pages">
+      <h2 class="font-medium">Documentation</h2>
+      <ul class="mt-3 space-y-2">
+        {% for doc in docs %}<li><a class="underline" href="{{ doc.url }}">{{ doc.title }}</a></li>{% endfor %}
+      </ul>
+    </nav>
+  </div>
+{% endblock %}

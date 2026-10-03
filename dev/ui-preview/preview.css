@@ -1,0 +1,29 @@
+.dt-preview-notice {
+	border-bottom: 1px solid #e5e5e5;
+	background: #fafafa;
+	padding: 10px 24px;
+	color: #525252;
+	font-size: 12px;
+	line-height: 1.6;
+}
+.dt-preview-notice a {
+	margin-left: 12px;
+	text-decoration: underline;
+}
+.dt-preview-notice p {
+	margin-top: 8px;
+	color: #991b1b;
+}
+.dt-preview-doc-results {
+	margin: 16px 0;
+	font-size: 14px;
+}
+.dt-preview-doc-results ul {
+	margin-top: 8px;
+}
+.dt-preview-doc-results li {
+	margin-top: 6px;
+}
+.dt-preview-doc-results a {
+	text-decoration: underline;
+}

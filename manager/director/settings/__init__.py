@@ -9,7 +9,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-import contextlib
 import os
 import socket
 from pathlib import Path
@@ -25,6 +24,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-yr31n(-7zgl2=i@pq5istf+i(nh3fryf5xn7l_=(y1$@=oh!is"
+DIRECTOR_APPSERVER_TOKEN = os.environ.get("DIRECTOR_APPSERVER_TOKEN", "")
+DIRECTOR_SSH_HOST = os.environ.get("DIRECTOR_SSH_HOST", "localhost")
+DIRECTOR_SSH_PORT = int(os.environ.get("DIRECTOR_SSH_PORT", "2222"))
+DIRECTOR_SSH_HOST_KEY = os.environ.get("DIRECTOR_SSH_HOST_KEY", "")
+FORBIDDEN_SITE_NAME_REGEX = r"(?!)"
+BLACKLISTED_SITE_NAMES = []
+BLACKLISTED_SITE_REGEXES = []
+WHITELISTED_SITE_NAMES = []
+DIRECTOR_REQUIRE_GUIDELINES = True
+DIRECTOR_SITE_STORAGE_SHARED = True
+DIRECTOR_CONTACT_EMAIL = "director@tjhsst.edu"
+DIRECTOR_MANAGER_URL = os.environ.get("DIRECTOR_MANAGER_URL", "http://localhost:8080")
+DIRECTOR_GUIDELINES_URL = "/guidelines/"
+DIRECTOR_METRICS_SCRAPE_IPS = []
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.environ.get("DIRECTOR_CACHE_URL", "redis://redis:6379/2"),
+    }
+}
 
 DEBUG = True
 
@@ -40,16 +60,6 @@ INTERNAL_IPS = [
     "localhost",
 ]
 
-# Load secret files
-with contextlib.suppress(ImportError):
-    from .secret import *  # noqa: F403
-
-if DEBUG:
-    # hack for docker environments, because docker creates ip's dynamically
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -60,8 +70,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "debug_toolbar",
-    "django_browser_reload",
     "django_linear_migrations",
     "social_django",
     "director.apps.auth",
@@ -72,23 +80,16 @@ INSTALLED_APPS = [
     "django_htmx",
 ]
 
-# they might automatically disable themselves in production
-# but the risk is too big so we do this to be safe
-if DEBUG:
-    INSTALLED_APPS += [
-        "django_extensions",
-    ]
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "director.apps.sites.governance.GuidelinesMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "director.apps.auth.middleware.IonAuthExceptionMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
 ]
 
@@ -106,6 +107,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "director.apps.context_processors.generic_info",
+                "director.apps.sites.governance.governance_context",
             ],
             "builtins": [
                 "heroicons.templatetags.heroicons",
@@ -132,12 +134,6 @@ DATABASES = {
 
 TESTING = "PYTEST_VERSION" in os.environ or "CI" in os.environ
 
-# allow testing outside of docker
-if TESTING:
-    DATABASES["default"]["ENGINE"] = "django.db.backends.sqlite3"
-    DATABASES["default"]["NAME"] = ":memory:"
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -157,8 +153,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = ["director.apps.auth.oauth.IonOauth2"]
-if DEBUG:
-    AUTHENTICATION_BACKENDS.append("django.contrib.auth.backends.ModelBackend")
 
 SOCIAL_AUTH_USER_FIELDS = [
     "username",
@@ -183,6 +177,9 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.user.create_user",
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
+    "social_core.pipeline.user.user_details",
+    "director.apps.auth.oauth.sync_graduation_year",
+    "director.apps.auth.oauth.attach_pending_sites",
 )
 
 AUTH_USER_MODEL = "users.User"
@@ -190,7 +187,7 @@ AUTH_USER_MODEL = "users.User"
 
 LOGIN_REDIRECT_URL = "/"
 
-SOCIAL_AUTH_LOGIN_ERROR_URL = "/"
+SOCIAL_AUTH_LOGIN_ERROR_URL = "auth:login"
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
 
 # Django Debug Toolbar
@@ -306,3 +303,27 @@ for all appservers (by design).
 # server.)
 SITE_DELETION_REMOVE_FILES: Final = True
 SITE_DELETION_REMOVE_DATABASE: Final = True
+
+# Apply deployment settings after all defaults so production values are retained.
+# Only an absent secret module is optional; errors inside it must stop startup.
+try:
+    from .secret import *  # noqa: F403
+except ModuleNotFoundError as exc:
+    if exc.name != f"{__package__}.secret":
+        raise
+
+if DEBUG:
+    INSTALLED_APPS += ["django_extensions", "debug_toolbar", "django_browser_reload"]
+    MIDDLEWARE += [
+        "django_browser_reload.middleware.BrowserReloadMiddleware",
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
+    AUTHENTICATION_BACKENDS.append("django.contrib.auth.backends.ModelBackend")
+    # Docker creates IP addresses dynamically; permit its gateway for debug tools.
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
+
+# Tests must never connect to the configured production database.
+if TESTING:
+    DATABASES["default"]["ENGINE"] = "django.db.backends.sqlite3"
+    DATABASES["default"]["NAME"] = ":memory:"

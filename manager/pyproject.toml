@@ -3,6 +3,7 @@ name = "Manager"
 version = "0.1.0"
 description = "A next generation website hosting platform"
 dependencies = [
+  "asyncssh>=2.19.0",
   "channels-redis",
   "celery",
   "channels[daphne]",
@@ -12,12 +13,14 @@ dependencies = [
   "django-htmx",
   "django-linear-migrations",
   "heroicons[django]",
+  "markdown-it-py",
   "pillow",
   "psycopg[binary]",
   "redis",
   "requests",
   "social-auth-app-django",
   "typing-extensions",
+  "websockets>=14.1",
 ]
 
 [dependency-groups]

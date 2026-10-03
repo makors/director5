@@ -1,0 +1,367 @@
+.dt-file-help {
+	margin: 10px 0 0;
+	color: #737373;
+	font-size: 13px;
+}
+.dt-file-title {
+	font-size: 20px;
+	font-weight: 500;
+	margin: 0;
+}
+.dt-file-toolbar .dt-btn-outline {
+	min-height: 30px;
+	padding: 5px 9px;
+	font-size: 12px;
+}
+.dt-file-text-button {
+	border: 0;
+	background: transparent;
+	color: #525252;
+	font: inherit;
+	font-size: 12px;
+	padding: 8px;
+	cursor: pointer;
+}
+.dt-file-text-button:hover {
+	background: #f5f5f5;
+}
+.dt-files-layout {
+	display: grid;
+	grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.2fr);
+	gap: 20px;
+	align-items: start;
+}
+.dt-file-panel {
+	border: 1px solid #e5e5e5;
+	border-radius: 8px;
+	background: #fff;
+	min-width: 0;
+}
+.dt-file-toolbar,
+.dt-file-actions,
+.dt-file-editor-heading,
+.dt-file-editor-footer {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 16px;
+}
+.dt-file-toolbar {
+	justify-content: space-between;
+	border-bottom: 1px solid #e5e5e5;
+}
+.dt-file-toolbar nav {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	font-size: 13px;
+}
+.dt-file-toolbar nav button,
+.dt-file-name {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	color: #171717;
+	cursor: pointer;
+	text-align: left;
+	font: inherit;
+}
+.dt-file-toolbar nav button:hover,
+.dt-file-name:hover,
+.dt-file-link:hover {
+	text-decoration: underline;
+}
+.dt-file-actions {
+	flex-wrap: wrap;
+	border-bottom: 1px solid #e5e5e5;
+}
+.dt-file-actions .dt-btn-outline {
+	min-height: 32px;
+	padding: 5px 9px;
+	font-size: 12px;
+}
+.dt-file-link {
+	color: #525252;
+	font-size: 12px;
+}
+.dt-file-table-scroll {
+	overflow-x: auto;
+	min-height: 340px;
+}
+.dt-file-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+.dt-file-table th {
+	padding: 12px 16px;
+	color: #737373;
+	font-weight: 400;
+	text-align: left;
+}
+.dt-file-table td {
+	border-top: 1px solid #f0f0f0;
+	padding: 11px 16px;
+}
+.dt-file-table td:nth-child(2) {
+	color: #737373;
+	white-space: nowrap;
+}
+.dt-file-table td:last-child {
+	width: 44px;
+	padding-left: 0;
+}
+.dt-file-name {
+	overflow-wrap: anywhere;
+	display: flex;
+	gap: 9px;
+	align-items: center;
+}
+.dt-file-type {
+	font-size: 11px;
+	color: #737373;
+}
+.dt-file-icon-button,
+.dt-file-menu summary {
+	border: 0;
+	border-radius: 4px;
+	width: 28px;
+	height: 28px;
+	background: transparent;
+	cursor: pointer;
+	color: #525252;
+	display: grid;
+	place-items: center;
+}
+.dt-file-icon-button:hover,
+.dt-file-menu summary:hover {
+	background: #f5f5f5;
+}
+.dt-file-menu {
+	position: relative;
+}
+.dt-file-menu summary {
+	list-style: none;
+}
+.dt-file-menu summary::-webkit-details-marker {
+	display: none;
+}
+.dt-file-menu div {
+	position: absolute;
+	z-index: 2;
+	right: 0;
+	width: 145px;
+	padding: 5px;
+	border: 1px solid #e5e5e5;
+	border-radius: 6px;
+	background: #fff;
+	box-shadow: 0 6px 18px #0000000d;
+}
+.dt-file-menu button,
+.dt-file-menu a {
+	display: block;
+	width: 100%;
+	border: 0;
+	padding: 8px;
+	color: #262626;
+	background: transparent;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	border-radius: 3px;
+}
+.dt-file-menu button:hover,
+.dt-file-menu a:hover {
+	background: #f5f5f5;
+}
+.dt-file-editor-heading {
+	justify-content: space-between;
+	border-bottom: 1px solid #e5e5e5;
+}
+.dt-file-editor-heading h2 {
+	font-family: monospace;
+	font-size: 13px;
+	font-weight: 500;
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+.dt-file-editor-heading span {
+	white-space: nowrap;
+	color: #737373;
+	font-size: 11px;
+}
+#file-content {
+	display: block;
+	width: 100%;
+	min-height: 405px;
+	resize: vertical;
+	border: 0;
+	background: #fff;
+	color: #171717;
+	padding: 18px;
+	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+	line-height: 1.6;
+	font-size: 13px;
+	tab-size: 4;
+}
+#file-content:focus {
+	outline: 2px solid #a3a3a3;
+	outline-offset: -2px;
+}
+.dt-file-editor-footer {
+	justify-content: flex-end;
+	border-top: 1px solid #e5e5e5;
+}
+.dt-file-editor-footer label {
+	margin-right: auto;
+	font-size: 12px;
+	color: #525252;
+	display: flex;
+	gap: 6px;
+	align-items: center;
+}
+.dt-file-empty {
+	min-height: 475px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 30px;
+}
+.dt-file-empty h2 {
+	font-size: 15px;
+	font-weight: 500;
+	margin: 0 0 8px;
+}
+.dt-file-empty p {
+	color: #737373;
+	font-size: 13px;
+	max-width: 290px;
+	line-height: 1.6;
+}
+.dt-file-message {
+	margin: 0 0 16px;
+	padding: 12px 16px;
+	border: 1px solid #e5e5e5;
+	border-radius: 6px;
+	font-size: 13px;
+}
+.dt-file-message[data-error="true"] {
+	color: #b91c1c;
+	border-color: #fecaca;
+}
+.dt-file-dialog {
+	width: min(440px, calc(100vw - 32px));
+	border: 1px solid #e5e5e5;
+	border-radius: 8px;
+	padding: 24px;
+}
+.dt-file-dialog::backdrop {
+	background: #0005;
+}
+.dt-file-dialog h2 {
+	font-size: 18px;
+	font-weight: 500;
+	margin: 0 0 12px;
+}
+.dt-file-dialog p {
+	color: #737373;
+	font-size: 13px;
+	line-height: 1.6;
+	overflow-wrap: anywhere;
+}
+.dt-file-dialog label {
+	display: block;
+	font-size: 13px;
+	margin: 18px 0 8px;
+}
+.dt-file-dialog input {
+	width: 100%;
+}
+.dt-file-dialog-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 22px;
+}
+@media (max-width: 850px) {
+	.dt-files-layout {
+		grid-template-columns: 1fr;
+	}
+	.dt-file-table-scroll {
+		min-height: 180px;
+	}
+	.dt-file-empty {
+		min-height: 220px;
+	}
+}
+.dt-files-layout [hidden],
+.dt-file-dialog [hidden] {
+	display: none !important;
+}
+.dt-file-workspace-heading {
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid #e5e5e5;
+	padding-right: 8px;
+	min-height: 40px;
+}
+#file-tabs {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	overflow-x: auto;
+}
+.dt-file-tab {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+	border-right: 1px solid #e5e5e5;
+}
+.dt-file-tab button {
+	border: 0;
+	background: transparent;
+	padding: 10px 8px;
+	font-size: 12px;
+	color: #525252;
+	cursor: pointer;
+}
+.dt-file-tab [role="tab"] {
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-left: 12px;
+}
+.dt-file-tab [aria-selected="true"] {
+	color: #171717;
+	box-shadow: inset 0 -2px #171717;
+}
+.dt-file-tab button:hover {
+	background: #f5f5f5;
+}
+#file-code-editor {
+	width: 100%;
+	height: 430px;
+	line-height: 1.6;
+}
+.dt-file-editor-footer {
+	flex-wrap: wrap;
+}
+.dt-file-editor-footer select,
+.dt-file-dialog select {
+	border: 1px solid #e5e5e5;
+	border-radius: 5px;
+	padding: 6px;
+	color: #525252;
+	background: #fff;
+	font-size: 12px;
+}
+.dt-file-dialog input[type="checkbox"] {
+	width: auto;
+}
+#file-code-editor .ace_comment,
+#file-code-editor .ace_operator {
+	color: #4b5563;
+}

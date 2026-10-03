@@ -8,6 +8,8 @@ dependencies = [
   "jinja2",
   "pydantic",
   "pydantic-extra-types",
+  "psycopg[binary]",
+  "PyMySQL",
   "requests",
   "typing-extensions",
 ]
@@ -16,6 +18,7 @@ dependencies = [
 lint = [
   "mypy",
   "pre-commit",
+  "types-PyMySQL",
   "types-requests",
 ]
 test = [

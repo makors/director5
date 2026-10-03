@@ -10,6 +10,7 @@ much more fault tolerant and scalable.
 hidden: true
 ---
 usage
+parity
 ```
 
 ```{toctree}

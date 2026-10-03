@@ -1,0 +1,21 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Custom resources · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading"><h1>Custom resources</h1></div>
+    <p class="dt-muted">Sites with at least one custom resource limit. Edit limits from a site's settings.</p>
+    <section class="dt-project-block" aria-label="Sites with custom limits">
+      {% for limit in limits %}
+        <div class="dt-setting-row">
+          <div>
+            <p><a class="dt-inline-link" href="{% url 'sites:resource-edit' limit.site_id %}">{{ limit.site.name }}</a></p>
+            <p class="dt-muted">CPU: {{ limit.cpus|default_if_none:'Default' }} · Memory: {{ limit.memory|default:'Default' }} · Request body: {{ limit.max_request_body_size|default_if_none:'Default' }}</p>
+            {% if limit.notes %}<p>{{ limit.notes }}</p>{% endif %}
+          </div>
+        </div>
+      {% empty %}<p class="dt-muted">All sites use default resource limits.</p>{% endfor %}
+    </section>
+  </div>
+{% endblock %}

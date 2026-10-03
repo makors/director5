@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Annotated, Any, Literal, TypedDict, cast
+from typing import Annotated, Any, Literal, Self, TypedDict, cast
+from urllib.parse import quote
 
 from pydantic import (
     BaseModel,
@@ -10,6 +11,7 @@ from pydantic import (
     ValidationInfo,
     ValidatorFunctionWrapHandler,
     field_validator,
+    model_validator,
 )
 from pydantic.functional_validators import AfterValidator, WrapValidator
 
@@ -86,6 +88,14 @@ class DatabaseInfo(BaseModel):
         assert host is not None
         return host
 
+    @property
+    def connection_url(self) -> str:
+        """Build a usable DSN with the site's credentials and database name."""
+        username = quote(self.username, safe="")
+        password = quote(self.password, safe="")
+        database = quote(self.name, safe="")
+        return f"{self.type_}://{username}:{password}@{self.host}:{self.port}/{database}"
+
     @field_validator("url", mode="after")
     @classmethod
     def check_db_url(cls, v: PostgresDsn | MySQLDsn) -> PostgresDsn | MySQLDsn:
@@ -104,14 +114,64 @@ class DatabaseInfo(BaseModel):
 DOMAIN_REGEX = r"^[a-zA-Z0-9][a-zA-Z0-9~.-]*[a-zA-Z0-9]$"
 
 
+class SiteRoute(BaseModel):
+    """A public host and optional directory prefix to route to a site."""
+
+    host: Annotated[str, Field(pattern=DOMAIN_REGEX)]
+    path_prefix: Annotated[str, Field(pattern=r"^/(?:[a-zA-Z0-9._~-]+/)*$")] = "/"
+
+    @field_validator("path_prefix", mode="before")
+    @classmethod
+    def normalize_path_prefix(cls, value: Any) -> Any:
+        if isinstance(value, str) and not value.endswith("/"):
+            return value + "/"
+        return value
+
+
+class ImageSetup(BaseModel):
+    """Manager-approved base image and validated per-site package names."""
+
+    base_image: Annotated[
+        str, Field(min_length=1, max_length=255, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9._:/@-]*$")
+    ]
+    setup_commands: Annotated[list[str], Field(max_length=100)] = Field(default_factory=list)
+    packages: Annotated[
+        list[
+            Annotated[
+                str, Field(min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9_][-+=_.a-zA-Z0-9]*$")
+            ]
+        ],
+        Field(max_length=100),
+    ] = Field(default_factory=list)
+    install_command_prefix: str = ""
+    run_script_template: str | None = None
+
+    @field_validator("setup_commands", "install_command_prefix", "run_script_template")
+    @classmethod
+    def no_null_characters(cls, value: Any) -> Any:
+        values = value if isinstance(value, list) else [value]
+        if any(item is not None and "\x00" in item for item in values):
+            raise ValueError("Null characters are not allowed")
+        return value
+
+    @model_validator(mode="after")
+    def require_install_command(self) -> Self:
+        if self.packages and not self.install_command_prefix.strip():
+            raise ValueError("The selected image has no package installation command")
+        return self
+
+
 class SiteInfo(BaseModel):
     pk: int
     hosts: list[Annotated[str, Field(pattern=DOMAIN_REGEX)]]
+    routes: Annotated[list[SiteRoute], Field(min_length=1)] | None = None
     is_served: bool
     type_: Literal["static", "dynamic"]
     resource_limits: ResourceLimits
-    runfile: Annotated[str, Field(pattern=r"[/\-.a-zA-Z0-9]+")] | None = None
+    runfile: Annotated[str, Field(pattern=r"^[/\-.a-zA-Z0-9]+$")] | None = None
     db: DatabaseInfo | None = None
+    image_setup: ImageSetup | None = None
+    custom_nginx_config: str = ""
 
     def container_env(self) -> dict[str, Any]:
         env: dict[str, Any] = {
@@ -119,8 +179,8 @@ class SiteInfo(BaseModel):
         }
         if self.db is not None:
             env |= {
-                "DATABASE_URL": str(self.db),
-                "DIRECTOR_DATABASE_URL": str(self.db),
+                "DATABASE_URL": self.db.connection_url,
+                "DIRECTOR_DATABASE_URL": self.db.connection_url,
                 "DIRECTOR_DATABASE_TYPE": self.db.type_,
                 "DIRECTOR_DATABASE_HOST": self.db.host,
                 "DIRECTOR_DATABASE_PORT": self.db.port,

@@ -4,6 +4,7 @@ WORKDIR /director5
 
 COPY pyproject.toml .
 COPY uv.lock .
+COPY docs/source ./docs/source
 
 ENV TZ=America/New_York
 

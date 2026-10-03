@@ -1,0 +1,18 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Request a site · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page dt-form-page">
+    <div class="dt-page-heading"><h1 id="request-heading">Request a site</h1></div>
+    <form method="post" action="{% url 'sites:request-create' %}" data-dt-form aria-labelledby="request-heading">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="dt-error-list" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}{% include "sites/governance/_form_field.html" %}{% endfor %}
+      <div class="dt-form-actions">
+        <button type="submit" class="dt-btn-primary" data-submitting-text="Submitting…">Submit request</button>
+        <a class="dt-inline-link" href="{% url 'sites:request-status' %}">View your requests</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Compose email · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page dt-form-page">
+    <div class="dt-page-heading"><h1 id="compose-heading">Compose email</h1></div>
+    <form method="post" action="{% url 'sites:mail-compose' %}" data-dt-form aria-labelledby="compose-heading">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="dt-error-list" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form.visible_fields %}{% include "sites/governance/_form_field.html" %}{% endfor %}
+      {% for field in form.hidden_fields %}{{ field }}{% if field.errors %}<div class="dt-error-list" role="alert">{{ field.errors }}</div>{% endif %}{% endfor %}
+      <div class="dt-form-actions">
+        <button class="dt-btn-primary" type="submit">Review email</button>
+        <a class="dt-inline-link" href="{% url 'sites:mail-history' %}">Email history</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

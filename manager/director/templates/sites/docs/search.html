@@ -1,0 +1,17 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Search documentation · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading"><h1>Search documentation</h1></div>
+    {% include "sites/docs/_search.html" %}
+    {% if error %}<p class="dt-error-list" role="alert">{{ error }}</p>{% endif %}
+    {% if results %}
+      <ul class="space-y-3">
+        {% for result in results %}<li><a class="underline" href="{{ result.url }}">{{ result.title }}</a></li>{% endfor %}
+      </ul>
+    {% elif q and not error %}<p class="dt-muted">No documentation matches this search.</p>{% endif %}
+    <p class="mt-6"><a class="dt-inline-link" href="{% url 'sites:docs-index' %}">All documentation</a></p>
+  </div>
+{% endblock %}

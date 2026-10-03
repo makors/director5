@@ -1,0 +1,50 @@
+<form id="settings-{{ section }}-form"
+      data-dt-form
+      aria-labelledby="settings-{{ section }}-heading"
+      method="post"
+      action="{% url action_name site.id %}"
+      hx-post="{% url action_name site.id %}"
+      hx-target="this"
+      hx-swap="outerHTML"
+      hx-disabled-elt="find button[type='submit']">
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="dt-error-list" role="alert">
+      {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+  {% for field in form.visible_fields %}
+    {% if field.name == 'mode' %}
+      <fieldset class="dt-form-field"
+                {% if field.help_text or field.errors %}aria-describedby="{% if field.help_text %}{{ field.auto_id }}_helptext{% endif %}{% if field.errors %} {{ field.auto_id }}_error{% endif %}"{% endif %}
+                {% if field.errors %}aria-invalid="true"{% endif %}>
+        <legend>{{ field.label }}</legend>
+        {{ field }}
+        {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="dt-muted">{{ field.help_text }}</p>{% endif %}
+        {% if field.errors %}
+          <div id="{{ field.auto_id }}_error" class="dt-error-list" role="alert">
+            {% for error in field.errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+      </fieldset>
+    {% else %}
+      <div class="dt-form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="dt-muted">(optional)</span>{% endif %}</label>
+        {{ field }}
+        {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="dt-muted">{{ field.help_text }}</p>{% endif %}
+        {% if field.errors %}
+          <div id="{{ field.auto_id }}_error" class="dt-error-list" role="alert">
+            {% for error in field.errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endfor %}
+  {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+  {% if section != 'name' or site.purpose != 'user' %}
+    <div class="dt-form-actions">
+      <button type="submit" class="dt-btn-primary" data-submitting-text="Saving…"
+              {% if not can_change_routing and section == 'name' or not can_change_routing and section == 'domain' or not can_change_type and section == 'type' %}disabled{% endif %}>{{ submit_label }}</button>
+    </div>
+  {% endif %}
+</form>

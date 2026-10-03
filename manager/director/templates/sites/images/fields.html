@@ -1,0 +1,22 @@
+{% if form.non_field_errors %}
+  <div class="dt-error-list" role="alert">
+    {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+  </div>
+{% endif %}
+{% for field in form.visible_fields %}
+  <div class="dt-form-field">
+    {% if field.field.widget.input_type == 'checkbox' %}
+      <label for="{{ field.id_for_label }}">{{ field }} {{ field.label }}</label>
+    {% else %}
+      <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="dt-muted">(optional)</span>{% endif %}</label>
+      {{ field }}
+    {% endif %}
+    {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="dt-muted">{{ field.help_text }}</p>{% endif %}
+    {% if field.errors %}
+      <div id="{{ field.auto_id }}_error" class="dt-error-list" role="alert">
+        {% for error in field.errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endfor %}
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}

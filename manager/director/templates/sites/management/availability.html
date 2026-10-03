@@ -1,0 +1,13 @@
+{% extends "base_with_nav.html" %}
+{% block title %}Public access · {{ site.name }} · Director{% endblock %}
+{% block main %}
+<div class="dt-page dt-form-page">
+  <h1>Public access</h1>
+  <p class="dt-muted">Not served keeps member tools available. Disabled removes public access and blocks member changes.</p>
+  <form method="post" data-dt-form>{% csrf_token %}
+    {% for error in form.non_field_errors %}<p role="alert">{{ error }}</p>{% endfor %}
+    {% for field in form %}<div class="dt-form-field">{{ field.label_tag }}{{ field }}{% for error in field.errors %}<p role="alert">{{ error }}</p>{% endfor %}</div>{% endfor %}
+    <div class="dt-form-actions"><button class="dt-btn-primary" type="submit">Save public access</button><a href="{% url 'sites:settings' site.id %}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

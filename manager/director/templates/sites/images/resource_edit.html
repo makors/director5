@@ -1,0 +1,20 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Resources for {{ site.name }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page dt-form-page">
+    <div class="dt-page-heading"><h1>Resources for {{ site.name }}</h1></div>
+    <p class="dt-muted">Saving queues a service deployment. Blank values restore the default limits.</p>
+    {% if not can_change %}<p role="status">{{ operation.kind_label }} · {{ operation.status_label }}. Finish or retry that operation on <a class="dt-inline-link" href="{{ cancel_url }}">Overview</a> before saving.</p>{% endif %}
+    <p class="dt-muted">Defaults: {{ form.defaults.cpus }} CPU cores, {{ form.defaults.memory }} memory bytes, {{ form.defaults.body }} request body bytes.</p>
+    <form method="post" data-dt-form>
+      {% csrf_token %}
+      {% include "sites/images/fields.html" %}
+      <div class="dt-form-actions">
+        <button type="submit" class="dt-btn-primary" {% if not can_change %}disabled{% endif %}>Save and deploy limits</button>
+        <a class="dt-inline-link" href="{{ cancel_url }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

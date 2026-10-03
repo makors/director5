@@ -1,0 +1,27 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Email history · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading">
+      <h1>Email history</h1>
+      <a class="dt-btn-primary" href="{% url 'sites:mail-compose' %}">Compose email</a>
+    </div>
+    <div class="dt-project-settings">
+      {% for message in page %}
+        <section class="dt-project-block">
+          <h2><a class="underline" href="{% url 'sites:mail-detail' message.request_id %}">{{ message.subject }}</a></h2>
+          <p class="dt-muted mt-2">{% if message.status == 'queued' %}Awaiting confirmation{% else %}{{ message.get_status_display }}{% endif %} · {{ message.sender.username|default:"Deleted account" }} · <time datetime="{{ message.created_time|date:'c' }}">{{ message.created_time|date:"M j, Y, g:i A T" }}</time></p>
+        </section>
+      {% empty %}<p class="dt-muted">No emails have been composed.</p>{% endfor %}
+    </div>
+    {% if page.has_other_pages %}
+      <nav class="mt-6 flex items-center gap-6" aria-label="Email history pages">
+        {% if page.has_previous %}<a class="dt-inline-link" href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}
+        <span class="dt-muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="dt-inline-link" href="?page={{ page.next_page_number }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  </div>
+{% endblock %}

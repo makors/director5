@@ -1,0 +1,30 @@
+{% extends "base_with_nav.html" %}
+{% block title %}Management · Director{% endblock %}
+{% block main %}
+<div class="dt-page">
+  <div class="dt-page-heading"><h1>Management</h1></div>
+  <nav class="dt-project-tabs" aria-label="Management navigation">
+    <a class="dt-project-tab" href="{% url 'sites:management' %}" {% if not failed_only %}aria-current="page"{% endif %}>All operations</a>
+    <a class="dt-project-tab" href="?failed=1" {% if failed_only %}aria-current="page"{% endif %}>Failed operations</a>
+    <a class="dt-project-tab" href="{% url 'sites:image-catalog' %}">Images</a>
+    <a class="dt-project-tab" href="{% url 'sites:resource-list' %}">Resources</a>
+  </nav>
+  {% for operation in page_obj %}
+    <section class="dt-project-block">
+      <h2><a class="dt-inline-link" href="{% url 'sites:dashboard' operation.site_id %}">{{ operation.site.name }}</a></h2>
+      <p>{{ operation.kind_label }} · {{ operation.status_label }}</p>
+      <details><summary>Actions and diagnostics</summary>
+        {% for action in operation.action_set.all %}<h3>{{ action.name }}</h3><p>{% if action.result == True %}Complete{% elif action.result == False %}Failed{% else %}Waiting{% endif %}</p><pre class="dt-code-output">{{ action.message }}</pre>{% endfor %}
+      </details>
+      {% if operation.status == 'failed' %}
+        <form method="post" action="{% url 'sites:operation-reset' operation.id %}" data-dt-form>
+          {% csrf_token %}
+          <div class="dt-form-field"><label for="confirmation-{{ operation.id }}">Type {{ operation.site.name }} to retry</label><input class="dt-input" id="confirmation-{{ operation.id }}" name="confirmation" required></div>
+          <button class="dt-btn-outline" type="submit">Retry operation</button>
+        </form>
+      {% endif %}
+    </section>
+  {% empty %}<p class="dt-muted">No operations.</p>{% endfor %}
+  {% if page_obj.has_other_pages %}<nav class="dt-form-actions" aria-label="Operation pages">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if failed_only %}&amp;failed=1{% endif %}">Previous</a>{% endif %}<span>Page {{ page_obj.number }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if failed_only %}&amp;failed=1{% endif %}">Next</a>{% endif %}</nav>{% endif %}
+</div>
+{% endblock %}

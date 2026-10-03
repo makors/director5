@@ -30,6 +30,7 @@ def student(django_user_model):
         last_name="Fleming",
         password="password",
         is_student=True,
+        accepted_guidelines=True,
     )
 
 
@@ -41,4 +42,5 @@ def teacher(django_user_model):
         last_name="Bardugo",
         password="password",
         is_teacher=True,
+        accepted_guidelines=True,
     )

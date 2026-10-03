@@ -12,7 +12,8 @@ Usage:
 import os
 from pathlib import Path
 
-DEBUG = True
+DEBUG = os.environ.get("DIRECTOR_DEBUG", "true").lower() == "true"
+APPSERVER_TOKEN = os.environ.get("DIRECTOR_APPSERVER_TOKEN", "")
 
 TIMEZONE = "America/New_York"
 
@@ -41,3 +42,9 @@ else:
 # Docker service configuration
 TMP_TMPFS_SIZE = 10 * 1000 * 1000  # 10 MB
 RUN_TMPFS_SIZE = 10 * 1000 * 100  # 10 MB
+
+# Isolated terminal workspaces and SQL clients use site-scoped credentials.
+RUNTIME_WORKSPACE_IMAGE = os.environ.get("RUNTIME_WORKSPACE_IMAGE", "alpine:3.21")
+RUNTIME_POSTGRES_IMAGE = os.environ.get("RUNTIME_POSTGRES_IMAGE", "postgres:17-alpine")
+RUNTIME_MYSQL_IMAGE = os.environ.get("RUNTIME_MYSQL_IMAGE", "mysql:8.4")
+RUNTIME_HELPER_NETWORK = os.environ.get("RUNTIME_HELPER_NETWORK", "bridge")

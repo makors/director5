@@ -15,7 +15,7 @@
   </div>
 
   <div class="mt-1 w-40" x-cloak x-show="open" x-transition>
-    <ul class="overflow-y-auto z-10 w-full max-h-60 bg-white rounded-lg border shadow-lg border-[#949494]">
+    <ul class="z-10 max-h-60 w-full overflow-y-auto rounded-lg border border-[#949494] bg-white shadow-lg">
       {% for choice in choices %}
         <li class="block p-2 hover:bg-gray-100 cursor-pointer border-b {{ extra_li_classes }}"
             @click="value = '{{ choice.0 }}'; readable_text=$el.textContent; open = false;">{{ choice.1 }}</li>

@@ -1,0 +1,12 @@
+.git
+.venv
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/settings/secret.py
+**/media
+**/collected_static
+work
+output
+docker/storage

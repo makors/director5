@@ -1,8 +1,17 @@
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 
+from orchestrator import settings
 from orchestrator.api.docker.schema import SiteInfo
 from orchestrator.main import app
+
+
+@pytest.fixture(autouse=True)
+def isolate_site_directories(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "SITES_DIR", tmp_path)
+    monkeypatch.setattr(settings, "HOST_SITES_DIR", tmp_path)
 
 
 @pytest.fixture

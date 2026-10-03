@@ -1,0 +1,18 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Website guidelines · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page max-w-3xl">
+    <div class="dt-page-heading"><h1>Website guidelines</h1></div>
+    {% include "sites/governance/guidelines_text.html" %}
+    {% if form %}
+      <form method="post" action="{% url 'sites:guidelines' %}" data-dt-form class="mt-8">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+        {% with field=form.accepted %}{% include "sites/governance/_form_field.html" %}{% endwith %}
+        <button type="submit" class="dt-btn-primary">Accept and continue</button>
+      </form>
+    {% endif %}
+  </div>
+{% endblock %}

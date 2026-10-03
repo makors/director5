@@ -1,0 +1,39 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}{{ message.subject }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading"><h1>{{ message.subject }}</h1></div>
+    <dl class="dt-project-meta mb-6">
+      <div><dt>Status</dt><dd>{% if message.status == 'queued' %}Awaiting confirmation{% else %}{{ message.get_status_display }}{% endif %}</dd></div>
+      <div><dt>Composed by</dt><dd>{{ message.sender.username|default:"Deleted account" }}</dd></div>
+      <div><dt>Created</dt><dd><time datetime="{{ message.created_time|date:'c' }}">{{ message.created_time|date:"M j, Y, g:i A T" }}</time></dd></div>
+      {% if message.sent_time %}<div><dt>Sent</dt><dd><time datetime="{{ message.sent_time|date:'c' }}">{{ message.sent_time|date:"M j, Y, g:i A T" }}</time></dd></div>{% endif %}
+      <div><dt>Recipients</dt><dd>{{ recipient_count }} user{{ recipient_count|pluralize }}{% if message.status == 'queued' and not message.limit_users.exists %} · All users{% endif %}</dd></div>
+    </dl>
+    <div class="dt-project-settings">
+      <section class="dt-project-block" aria-labelledby="plain-message-heading">
+        <h2 id="plain-message-heading">Plain text message</h2>
+        <pre class="mt-3 font-sans text-sm break-words whitespace-pre-wrap">{{ message.text_plain }}</pre>
+      </section>
+      <section class="dt-project-block" aria-labelledby="html-message-heading">
+        <h2 id="html-message-heading">HTML message</h2>
+        <pre class="mt-3 text-xs break-words whitespace-pre-wrap">{{ message.text_html }}</pre>
+      </section>
+    </div>
+    {% if can_send %}
+      <form method="post" action="{% url 'sites:mail-detail' message.request_id %}" data-dt-form class="mt-8">
+        {% csrf_token %}
+        {% if message.status == 'failed' and recipient_count %}<p class="dt-error-list mb-4">Check the email configuration before retrying. Retrying may send duplicate emails.</p>{% endif %}
+        {{ form.request_id }}
+        {% if form.request_id.errors %}<div class="dt-error-list" role="alert">{{ form.request_id.errors }}</div>{% endif %}
+        {% with field=form.confirm_send %}{% include "sites/governance/_form_field.html" %}{% endwith %}
+        <p class="dt-muted mb-4">This email will be sent to {{ recipient_count }} recipient{{ recipient_count|pluralize }} using BCC.</p>
+        <button class="dt-btn-primary" type="submit" {% if not recipient_count %}disabled{% endif %}>{% if message.status == 'failed' %}Retry sending{% else %}Send email{% endif %}</button>
+        {% if not recipient_count %}<p class="dt-field-error">No recipients have a valid email address.</p>{% endif %}
+      </form>
+    {% endif %}
+    <p class="mt-6"><a class="dt-inline-link" href="{% url 'sites:mail-history' %}">Email history</a></p>
+  </div>
+{% endblock %}

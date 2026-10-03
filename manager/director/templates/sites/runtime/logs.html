@@ -1,0 +1,16 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}{{ site.name }} logs · Director{% endblock title %}
+
+{% block main %}
+  <div class="dt-page dt-project-page">
+    <p><a href="{% url 'sites:dashboard' site.id %}">{{ site.name }}</a> / Logs</p>
+    <div class="dt-page-heading"><h1>Logs</h1></div>
+    {% include "sites/partials/navigation.html" with active_tab="logs" can_edit=True %}
+    <p class="dt-muted">Recent service output. Updates every five seconds; output is limited to 200 lines and 64 KiB.</p>
+    <div id="runtime-log-output" hx-get="{% url 'sites:logs_output' site.id %}" hx-trigger="load, every 5s" hx-swap="innerHTML" aria-live="off">
+      <p class="dt-muted">Loading logs…</p>
+    </div>
+    <p><a href="{% url 'sites:logs_output' site.id %}" target="_blank" rel="noopener noreferrer">Open latest logs</a></p>
+  </div>
+{% endblock main %}

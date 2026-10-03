@@ -1,0 +1,58 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Database · {{ site.name }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <a class="dt-back-link" href="{% url 'sites:dashboard' site.id %}">← {{ site.name }}</a>
+    <header class="dt-project-header"><h1>Database</h1></header>
+    {% include "sites/partials/navigation.html" with active_tab="database" can_edit=True %}
+    {% if database %}
+      <section class="dt-project-block">
+        <h2>{{ database.host.get_dbms_display }}</h2>
+        {% if not database.provisioned %}<p class="dt-project-notice">Database setup has not finished. Follow the operation on <a href="{% url 'sites:dashboard' site.id %}">Overview</a>.</p>{% endif %}
+        <dl class="dt-project-meta">
+          <div><dt>Host</dt><dd>{{ database.host.hostname }}</dd></div>
+          <div><dt>Port</dt><dd>{{ database.host.port }}</dd></div>
+          <div><dt>Database</dt><dd>{{ database.username }}</dd></div>
+          <div><dt>Username</dt><dd>{{ database.username }}</dd></div>
+        </dl>
+        {% if database.provisioned %}
+          <div class="dt-form-field"><label for="database-url">Connection URL</label><input id="database-url" class="dt-input" value="{{ database.redacted_db_url }}" readonly></div>
+          <details><summary>Show connection credentials</summary>
+            <div class="dt-form-field"><label for="database-password">Password</label><input id="database-password" class="dt-input" value="{{ database.password }}" readonly></div>
+            <div class="dt-form-field"><label for="database-full-url">Full connection URL</label><input id="database-full-url" class="dt-input" value="{{ connection_url }}" readonly></div>
+          </details>
+          <p class="dt-setting-help">Applications receive the connection through <code>DIRECTOR_DATABASE_URL</code> and <code>DATABASE_URL</code>.</p>
+          <div class="dt-form-actions">
+            <a class="dt-btn-primary" href="{% url 'databases:query' site.id %}">SQL console</a>
+            {% if database_terminal_url %}<a class="dt-btn-outline" href="{{ database_terminal_url }}">Interactive SQL terminal</a>{% endif %}
+          </div>
+        {% endif %}
+      </section>
+      <section class="dt-project-block">
+        <h2>Password</h2>
+        <p class="dt-muted">Generate a new password and restart the application with its updated connection.</p>
+        <form method="post" data-dt-form action="{% url 'databases:rotate_password' site.id %}">
+          {% csrf_token %}<button class="dt-btn-outline" type="submit" {% if operation or not database.provisioned %}disabled{% endif %}>Rotate password</button>
+        </form>
+      </section>
+      <section class="dt-project-block dt-project-delete">
+        <details><summary><strong>Delete database</strong></summary>
+          <p>The database, its tables, and its user account will be permanently removed. Site files are kept.</p>
+          <form method="post" data-dt-form action="{% url 'databases:delete' site.id %}">
+            {% csrf_token %}
+            <div class="dt-form-field"><label for="database-confirmation">Type {{ site.name }} to confirm</label><input id="database-confirmation" name="confirmation" class="dt-input" required pattern="{{ site.name }}" autocomplete="off"></div>
+            <button class="dt-btn-danger" type="submit" {% if operation %}disabled{% endif %}>Delete database</button>
+          </form>
+        </details>
+      </section>
+      {% if operation %}<p class="dt-muted">A site operation is in progress. <a href="{% url 'sites:dashboard' site.id %}">View activity</a>.</p>{% endif %}
+    {% else %}
+      <section class="dt-project-block">
+        <p class="dt-muted">This site does not have a database.</p>
+        {% if site.mode == 'dynamic' %}<a class="dt-btn-primary" href="{% url 'databases:create' site.id %}">Create database</a>{% else %}<p class="dt-muted">Databases are available for dynamic sites.</p>{% endif %}
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -20,7 +20,15 @@ def raise_by_recoverability(site: Site, response: requests.Response):
             f"Appserver ({site=}) returned {response.status_code} and could not be decoded to JSON."
         ) from e
 
-    if content.get("user_error") and (explanation := content.get("explanation")):
+    # FastAPI's HTTPException wraps its structured payload in a "detail" object.
+    if isinstance(content, dict) and isinstance(content.get("detail"), dict):
+        content = content["detail"]
+
+    if (
+        isinstance(content, dict)
+        and content.get("user_error")
+        and (explanation := content.get("explanation"))
+    ):
         description = content.get("description", "An error occurred")
         raise UserFacingError(f"{description}: {explanation}")
     response.raise_for_status()
@@ -48,60 +56,60 @@ def update_docker_service(site: Site, appservers: list[Appserver]) -> Iterator[s
 
 
 def build_docker_image(site: Site, appservers: list[Appserver]) -> Iterator[str]:
+    from .images import image_setup_for_site
+
     appserver = random.choice(appservers)
     yield f"Connecting to appserver {appserver} to build docker image."
+    data = {"site": site.serialize_for_appserver()}
+    image_setup = image_setup_for_site(site)
+    if image_setup is not None:
+        data["site"]["image_setup"] = image_setup
     response = appserver.http_request(
         "/api/docker/image/build",
         method="POST",
-        data={"site": site.serialize_for_appserver()},
+        data=data,
     )
     raise_by_recoverability(site, response)
     yield "Docker image built"
 
 
-# For the following delete/remove actions, we don't really
-# care if they fail - we're just blindly deleting everything
-
-
 def delete_site_files(site: Site, appservers: list[Appserver]) -> Iterator[str]:
     appserver = random.choice(appservers)
     yield f"Connecting to {appserver} to delete site files."
-    appserver.http_request(
+    response = appserver.http_request(
         "/api/files/delete-all",
         method="POST",
         data=site.serialize_for_appserver(),
     )
+    raise_by_recoverability(site, response)
     yield "Site files deleted"
 
 
 def delete_site_database(site: Site, appservers: list[Appserver]) -> Iterator[str]:
-    appserver = random.choice(appservers)
-    yield f"Connecting to {appserver} to delete site database."
-    appserver.http_request(
-        "/api/database/delete",
-        method="POST",
-        data=site.serialize_for_appserver(),
-    )
-    yield "Site database deleted"
+    from .database_actions import delete_site_database as delete_database_resources
+
+    yield from delete_database_resources(site, appservers)
 
 
 def remove_docker_service(site: Site, appservers: list[Appserver]) -> Iterator[str]:
     appserver = random.choice(appservers)
     yield f"Removing Docker service on {appserver}"
-    appserver.http_request(
+    response = appserver.http_request(
         "/api/docker/service/remove",
         method="POST",
         data=site.serialize_for_appserver(),
     )
+    raise_by_recoverability(site, response)
     yield "Docker service removed"
 
 
 def remove_docker_image(site: Site, appservers: list[Appserver]) -> Iterator[str]:
     appserver = random.choice(appservers)
     yield f"Removing Docker image on {appserver}"
-    appserver.http_request(
+    response = appserver.http_request(
         "/api/docker/image/delete",
         method="POST",
         data=site.serialize_for_appserver(),
     )
+    raise_by_recoverability(site, response)
     yield "Docker image removed"

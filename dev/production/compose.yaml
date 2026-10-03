@@ -1,0 +1,209 @@
+name: director
+
+x-app: &app
+  image: director5-production:local
+  restart: unless-stopped
+  env_file: .env
+  networks: [control]
+  volumes:
+    - ./secret.py:/director5/manager/director/settings/secret.py:ro
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    networks: [control]
+    environment:
+      POSTGRES_DB: director
+      POSTGRES_USER: director
+      POSTGRES_PASSWORD: ${DIRECTOR_POSTGRES_PASSWORD:?Set DIRECTOR_POSTGRES_PASSWORD}
+    volumes: [manager-pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U director -d director"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: [redis-server, --appendonly, "yes"]
+    networks: [control]
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  site-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    networks:
+      sites:
+        aliases: [director-site-postgres]
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: director_site_admin
+      POSTGRES_PASSWORD: ${DIRECTOR_SITE_POSTGRES_PASSWORD:?Set DIRECTOR_SITE_POSTGRES_PASSWORD}
+    volumes: [site-pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U director_site_admin -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    networks:
+      sites:
+        aliases: [director-site-mysql]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DIRECTOR_MYSQL_ROOT_PASSWORD:?Set DIRECTOR_MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+    volumes: [mysql-data:/var/lib/mysql]
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysqladmin ping -h 127.0.0.1 -u root --silent']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  init:
+    <<: *app
+    restart: "no"
+    build:
+      context: ${DIRECTOR_SOURCE_DIR:-/opt/director5}
+      dockerfile: ${DIRECTOR_DEPLOY_DIR:-/opt/director5-production}/Dockerfile
+    working_dir: /director5/manager
+    command: [sh, -c, "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py shell < /deploy/bootstrap.py"]
+    environment:
+      DIRECTOR_SECRET_KEY: ${DIRECTOR_SECRET_KEY:?Set DIRECTOR_SECRET_KEY}
+      DIRECTOR_APPSERVER_TOKEN: ${DIRECTOR_APPSERVER_TOKEN:?Set DIRECTOR_APPSERVER_TOKEN}
+    volumes:
+      - ./secret.py:/director5/manager/director/settings/secret.py:ro
+      - ./bootstrap.py:/deploy/bootstrap.py:ro
+      - director-static:/static
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      site-postgres: {condition: service_healthy}
+      mysql: {condition: service_healthy}
+
+  manager:
+    <<: *app
+    working_dir: /director5/manager
+    command: [daphne, -b, "0.0.0.0", -p, "8080", --proxy-headers, director.asgi:application]
+    volumes:
+      - ./secret.py:/director5/manager/director/settings/secret.py:ro
+      - director-media:/media
+    depends_on:
+      init: {condition: service_completed_successfully}
+      orchestrator: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; r=urllib.request.Request('http://127.0.0.1:8080/accounts/login/',headers={'Host':'director.makors.xyz','X-Forwarded-Proto':'https'}); assert urllib.request.urlopen(r,timeout=3).status == 200"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  celery:
+    <<: *app
+    working_dir: /director5/manager
+    command: [celery, -A, director, worker, --loglevel=INFO, --concurrency=2]
+    depends_on:
+      init: {condition: service_completed_successfully}
+      orchestrator: {condition: service_healthy}
+
+  ssh:
+    <<: *app
+    working_dir: /director5/manager
+    command: [python, manage.py, runssh, --host, "0.0.0.0", --port, "2222"]
+    ports: ["2222:2222"]
+    volumes:
+      - ./secret.py:/director5/manager/director/settings/secret.py:ro
+      - ./state/ssh:/run/director-ssh:ro
+    depends_on:
+      init: {condition: service_completed_successfully}
+      orchestrator: {condition: service_healthy}
+
+  orchestrator:
+    image: director5-production:local
+    restart: unless-stopped
+    working_dir: /director5/orchestrator
+    command: [uvicorn, orchestrator.main:app, --host, "0.0.0.0", --port, "8080"]
+    networks: [control, sites]
+    environment:
+      DIRECTOR_DEBUG: "false"
+      DIRECTOR_APPSERVER_TOKEN: ${DIRECTOR_APPSERVER_TOKEN:?Set DIRECTOR_APPSERVER_TOKEN}
+      RUNTIME_HELPER_NETWORK: director-sites
+    volumes:
+      - /data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:8080/ping',timeout=3).status == 200"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  assets:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    networks: [control]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - director-static:/static:ro
+      - director-media:/media:ro
+    depends_on:
+      init: {condition: service_completed_successfully}
+
+  traefik:
+    profiles: [edge]
+    image: traefik:v3.2
+    restart: unless-stopped
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.asdefault=true
+      - --entrypoints.websecure.http.tls=true
+      - --entrypoints.websecure.http.tls.certresolver=letsencrypt
+      - --providers.file.filename=/etc/traefik/director.yml
+      - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --providers.swarm.network=director-sites
+      - --providers.swarm.exposedbydefault=true
+      - '--providers.swarm.constraints=Label(`traefik.swarm.network`, `director-sites`)'
+      - --certificatesresolvers.letsencrypt.acme.email=director@makors.xyz
+      - --certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --api.dashboard=false
+      - --log.level=INFO
+    networks: [control, sites]
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./traefik-dynamic.yml:/etc/traefik/director.yml:ro
+      - ./state/acme:/acme
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      manager: {condition: service_healthy}
+      assets: {condition: service_started}
+
+networks:
+  control:
+    name: director-control
+    driver: bridge
+  sites:
+    name: director-sites
+    external: true
+
+volumes:
+  manager-pgdata:
+  site-pgdata:
+  mysql-data:
+  redis-data:
+  director-static:
+  director-media:

@@ -1,0 +1,33 @@
+{% extends "base_with_nav.html" %}
+
+{% load static %}
+
+{% block title %}{{ site.name }} terminal · Director{% endblock title %}
+
+{% block head %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'sites/vendor/xterm.css' %}">
+  <script defer src="{% static 'sites/vendor/xterm.js' %}"></script>
+  <script defer src="{% static 'sites/vendor/addon-fit.js' %}"></script>
+  <script defer src="{% static 'sites/terminal.js' %}"></script>
+{% endblock head %}
+
+{% block main %}
+  <div class="dt-page dt-project-page">
+    <p><a href="{% url 'sites:dashboard' site.id %}">{{ site.name }}</a> / Terminal</p>
+    <div class="dt-page-heading"><h1>{% if kind == 'database' %}Database terminal{% else %}Terminal{% endif %}</h1></div>
+    {% include "sites/partials/navigation.html" with active_tab="terminal" can_edit=True %}
+    <p class="dt-muted">{% if kind == 'database' %}Connect to your site's database using its own account.{% else %}Open a workspace shell to edit this site's files, even while the website is stopped. Closing the connection ends this terminal session.{% endif %}</p>
+    <form id="terminal-connect" method="post" action="{% url 'sites:terminal_session' site.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="kind" value="{{ kind }}">
+      <div class="dt-form-actions">
+        <button class="dt-btn-outline" type="submit">Connect</button>
+        <button id="terminal-disconnect" class="dt-btn-outline" type="button" disabled>Disconnect</button>
+        <span id="terminal-status" role="status" aria-live="polite">Disconnected</span>
+      </div>
+    </form>
+    <div id="site-terminal" class="dt-runtime-terminal" role="region" aria-label="Interactive site terminal"></div>
+    <p><a href="{% url 'sites:ssh' site.id %}">SSH access</a></p>
+  </div>
+{% endblock main %}

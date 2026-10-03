@@ -1,0 +1,6 @@
+{% if error %}
+  <p role="status">{{ error }}</p>
+{% else %}
+  <pre class="dt-runtime-output">{% if output %}{{ output }}{% else %}No log output yet.{% endif %}</pre>
+  {% if truncated %}<p class="dt-muted">Output was truncated at 64 KiB.</p>{% endif %}
+{% endif %}

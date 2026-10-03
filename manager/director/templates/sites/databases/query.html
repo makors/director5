@@ -1,0 +1,30 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}SQL console · {{ site.name }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <a class="dt-back-link" href="{% url 'databases:detail' site.id %}">← Database</a>
+    <header class="dt-project-header"><h1>SQL console</h1></header>
+    {% include "sites/partials/navigation.html" with active_tab="database" can_edit=True %}
+    <form method="post" data-dt-form>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="dt-form-errors" role="alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+      <div class="dt-form-field">{{ form.sql.label_tag }}{{ form.sql }}{{ form.sql.errors }}<p class="dt-muted" id="{{ form.sql.id_for_label }}_helptext">{{ form.sql.help_text }}</p></div>
+      <button class="dt-btn-primary" type="submit" {% if operation %}disabled{% endif %}>Run query</button>
+    </form>
+    {% if operation %}<p class="dt-muted">Wait for the current site operation to finish before running queries.</p>{% endif %}
+    {% if result %}
+      <section class="dt-project-block" aria-label="Query result">
+        <h2>Result</h2>
+        {% if result.columns %}
+          <div class="dt-table-scroll"><table class="dt-table"><thead><tr>{% for column in result.columns %}<th>{{ column }}</th>{% endfor %}</tr></thead><tbody>
+            {% for row in result.rows %}<tr>{% for value in row %}<td>{% if value is None %}<span class="dt-muted">NULL</span>{% else %}{{ value }}{% endif %}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="{{ result.columns|length }}">No rows returned.</td></tr>{% endfor %}
+          </tbody></table></div>
+          {% if result.truncated %}<p class="dt-muted">Showing the first 100 rows.</p>{% endif %}
+          {% if result.cells_truncated %}<p class="dt-muted">Long cell values are shortened to 4096 characters.</p>{% endif %}
+        {% else %}<p>{{ result.affected_rows }} row{{ result.affected_rows|pluralize }} affected.</p>{% endif %}
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}

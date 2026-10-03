@@ -1,27 +1,47 @@
 {% extends "base.html" %}
 
-{% load static %}
-
 {% block before_content %}
   {{ block.super }}
-  <header class="flex justify-between items-center w-full h-16 bg-dt-blue">
-    <div class="flex">
-      <a href="{% url "sites:index" %}">
-        <img src="{% static "favicon/favicon.svg" %}"
-             alt="director logo"
-             class="w-20 h-20">
-      </a>
-      {% include "components/input.html" with elem_id="input-box" guide_text="[Enter]" extra_div_classes="ml-2" %}
-
-    </div>
-    <div class="flex items-center">
-      {% if user.username %}
-        {% heroicon_solid "book-open" fill="white" size="40" %}
-        <p class="pr-2 pl-2 text-white">{{ user.username }}</p>
-        {% heroicon_solid "chevron-down" fill="white" size="22" class="mr-4" %}
-      {% else %}
-        {% heroicon_solid "book-open" fill="white" size="40" class="mr-4" %}
+  <header class="dt-header">
+    <nav class="dt-nav" aria-label="Main navigation">
+      <a class="dt-brand" href="{% url 'sites:index' %}" aria-label="Director home">Director</a>
+      {% if user.is_authenticated %}
+        <span class="dt-nav-divider" aria-hidden="true">/</span>
+        <a class="dt-nav-link" href="{% url 'sites:index' %}"
+           {% if request.resolver_match.url_name == 'index' %}aria-current="page"{% endif %}>Sites</a>
+        {% if site %}
+          <span class="dt-nav-divider dt-site-breadcrumb" aria-hidden="true">/</span>
+          <a class="dt-nav-site dt-site-breadcrumb" href="{% url 'sites:dashboard' site.id %}">{{ site.name }}</a>
+        {% elif request.resolver_match.url_name == 'create' %}
+          <span class="dt-nav-divider dt-site-breadcrumb" aria-hidden="true">/</span>
+          <span class="dt-nav-site dt-site-breadcrumb">New site</span>
+        {% endif %}
       {% endif %}
-    </div>
+      <div class="dt-nav-end">
+        <a class="dt-docs-link" href="{% url 'sites:docs-index' %}" aria-label="Documentation">Docs</a>
+        {% if user.is_authenticated %}
+          <details class="dt-account" data-dt-menu>
+            <summary title="Account menu">{% if user.first_name or user.last_name %}{{ user.full_name }}{% else %}{{ user.username }}{% endif %}</summary>
+            <div class="dt-account-menu">
+              <p>Signed in as <strong>{{ user.username }}</strong></p>
+              {% include "sites/governance/navigation.html" %}
+              <a href="{% url 'sites:create-personal' %}">Personal site</a>
+              {% if user.is_superuser %}
+                <a href="{% url 'sites:management' %}">Management</a>
+                <a href="{% url 'sites:image-catalog' %}">Images</a>
+                <a href="{% url 'sites:resource-list' %}">Resource limits</a>
+                <a href="{% url 'sites:mail-history' %}">Email</a>
+              {% endif %}
+              {% if user.is_staff %}<a href="{% url 'admin:index' %}">Administration</a>{% endif %}
+              <a href="{% url 'sites:docs-index' %}">Documentation</a>
+              <form method="post" action="{% url 'auth:logout' %}">
+                {% csrf_token %}
+                <button type="submit">Sign out</button>
+              </form>
+            </div>
+          </details>
+        {% endif %}
+      </div>
+    </nav>
   </header>
 {% endblock %}

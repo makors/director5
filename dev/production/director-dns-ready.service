@@ -1,0 +1,11 @@
+[Unit]
+Description=Start Director TLS routing once public DNS is configured
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/director5-production
+ExecStart=/usr/bin/python3 /opt/director5-production/dns-ready.py
+TimeoutStartSec=120

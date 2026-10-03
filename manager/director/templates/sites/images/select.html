@@ -1,0 +1,31 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Image for {{ site.name }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page dt-form-page">
+    <div class="dt-page-heading"><h1>Image for {{ site.name }}</h1></div>
+    <p class="dt-muted">Saving queues a build and deployment. Your current service keeps running until the new image is ready.</p>
+    {% if site.mode == 'static' %}<p class="dt-muted">For static sites, this image powers the terminal and build tools. Nginx serves your public files.</p>{% endif %}
+    {% if not can_change %}<p role="status">{{ operation.kind_label }} · {{ operation.status_label }}. Finish or retry that operation on <a class="dt-inline-link" href="{{ cancel_url }}">Overview</a> before saving.</p>{% endif %}
+    {% if site.docker_image %}<p>Current image: {{ site.docker_image.friendly_name|default:site.docker_image.name }}</p>{% endif %}
+    <form method="post" data-dt-form>
+      {% csrf_token %}
+      {% include "sites/images/fields.html" %}
+      <div class="dt-form-actions">
+        <button type="submit" class="dt-btn-primary" {% if not can_change %}disabled{% endif %}>Build and deploy image</button>
+        <a class="dt-inline-link" href="{{ cancel_url }}">Cancel</a>
+      </div>
+    </form>
+    {% if images %}
+      <section class="dt-project-block" aria-labelledby="available-images-heading">
+        <h2 id="available-images-heading">Available images</h2>
+        {% for image in images %}
+          <div class="dt-setting-row">
+            <div><p><strong>{{ image.friendly_name|default:image.name }}</strong></p><p class="dt-muted">{{ image.description }}</p></div>
+          </div>
+        {% endfor %}
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}

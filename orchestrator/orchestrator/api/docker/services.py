@@ -43,7 +43,14 @@ def shared_swarm_params(site: SiteInfo) -> dict[str, Any]:
     root = site_dir / ".home"
     root.mkdir(exist_ok=True, parents=True)
 
-    (site_dir / "public").mkdir(exist_ok=True, parents=True)
+    public_dir = site_dir / "public"
+    try:
+        public_dir.mkdir(mode=0o755)
+    except FileExistsError:
+        pass
+    else:
+        # Nginx workers need to traverse a new public directory even with a private umask.
+        public_dir.chmod(0o755)
 
     if site.type_ == "dynamic":
         image = str(site)
@@ -104,23 +111,19 @@ def shared_swarm_params(site: SiteInfo) -> dict[str, Any]:
 def create_service_params(site_info: SiteInfo) -> dict[str, Any]:
     """Parameters for creating/updating a Docker Swarm service."""
     # default to looking through /site for a run.sh, for backwards compatibility
-    if site_info.runfile is None:
-        site_info.runfile = " ".join(
-            ("/site/run.sh", "/site/private/run.sh", "/site/public/run.sh")
-        )
+    runfile = site_info.runfile
+    if runfile is None:
+        runfile = " ".join(("/site/run.sh", "/site/private/run.sh", "/site/public/run.sh"))
 
     shell_cmd_template = string.Template((TEMPLATE_DIR / "run-site.sh").read_text())
     # note that the regex on the runfile should prevent injections
-    shell_cmd = shell_cmd_template.safe_substitute(SEARCH_PATH=site_info.runfile)
+    shell_cmd = shell_cmd_template.safe_substitute(SEARCH_PATH=runfile)
 
     port = "80"
     extra_envs = {"PORT": port, "HOST": "0.0.0.0"}
     params = shared_swarm_params(site_info)
     params.setdefault("env", [])
     params["env"].extend(f"{name}={val}" for name, val in extra_envs.items())
-
-    # match any hosts given
-    hosts = " || ".join(f"Host(`{host}`)" for host in site_info.hosts)
 
     max_request_body_size = str(site_info.resource_limits.max_request_body_size)
 
@@ -136,18 +139,11 @@ def create_service_params(site_info: SiteInfo) -> dict[str, Any]:
         # This is safe because for static sites, the user doesn't have
         # access to the nginx container
         "read_only": site_info.type_ == "dynamic",
-        "workdir": "/site/public",
+        "workdir": "/site/public" if site_info.type_ == "dynamic" else "/usr/share/nginx/html",
         # add to the docker swarm network, so traefik can find it
         "networks": ["director-sites"],
         # these labels dictate how traefik actually proxies the requests into the service
-        "labels": {
-            f"traefik.http.routers.{site_info}.rule": hosts,
-            f"traefik.http.routers.{site_info}.service": str(site_info),
-            f"traefik.http.routers.{site_info}.middlewares": f"max-request-{max_request_body_size}@swarm",
-            f"traefik.http.services.{site_info}.loadbalancer.server.port": port,
-            f"traefik.http.middlewares.max-request-{max_request_body_size}.buffering.maxRequestBodyBytes": max_request_body_size,
-            "traefik.swarm.network": "director-sites",
-        },
+        "labels": routing_labels(site_info, port, max_request_body_size),
         "resources": Resources(
             cpu_limit=site_info.resource_limits.cpus,
             mem_limit=site_info.resource_limits.memory,
@@ -159,12 +155,14 @@ def create_service_params(site_info: SiteInfo) -> dict[str, Any]:
             "max-file": "1",
         },
         "hosts": params.pop("extra_hosts"),
-        "stop_grace_period": 3,
+        "stop_grace_period": int(3 * 1e9),
         # vip = virtual IP, not `very important person`!
         "endpoint_spec": EndpointSpec(mode="vip", ports={}),
         # don't replicate the service if it's not supposed to be served
         "mode": ServiceMode(mode="replicated", replicas=int(site_info.is_served)),
-        "restart_policy": RestartPolicy(condition="any", delay=5, max_attempts=5, window=0),
+        "restart_policy": RestartPolicy(
+            condition="any", delay=int(5 * 1e9), max_attempts=5, window=0
+        ),
         "update_config": UpdateConfig(
             parallelism=1,
             order="stop-first",
@@ -176,3 +174,39 @@ def create_service_params(site_info: SiteInfo) -> dict[str, Any]:
         ),
     }
     return params
+
+
+def routing_labels(site: SiteInfo, port: str, max_request_body_size: str) -> dict[str, str]:
+    """Route hostnames and shared-host directory prefixes to the same service."""
+    request_middleware = f"max-request-{max_request_body_size}"
+    labels = {
+        f"traefik.http.services.{site}.loadbalancer.server.port": port,
+        f"traefik.http.middlewares.{request_middleware}.buffering.maxRequestBodyBytes": max_request_body_size,
+        "traefik.swarm.network": "director-sites",
+    }
+    if site.routes is None:
+        rules = [(str(site), " || ".join(f"Host(`{host}`)" for host in site.hosts), "/")]
+    else:
+        rules = []
+        for index, route in enumerate(site.routes):
+            rule = f"Host(`{route.host}`)"
+            if route.path_prefix != "/":
+                prefix = route.path_prefix.rstrip("/")
+                # Exact matches plus a trailing slash avoid matching another site's name.
+                rule += f" && (Path(`{prefix}`) || PathPrefix(`{route.path_prefix}`))"
+            rules.append((f"{site}-{index}", rule, route.path_prefix))
+
+    for name, rule, path_prefix in rules:
+        middlewares = [f"{request_middleware}@swarm"]
+        if path_prefix != "/":
+            strip_middleware = f"{name}-strip-prefix"
+            labels[f"traefik.http.middlewares.{strip_middleware}.stripprefix.prefixes"] = (
+                path_prefix.rstrip("/")
+            )
+            middlewares.append(f"{strip_middleware}@swarm")
+        labels |= {
+            f"traefik.http.routers.{name}.rule": rule,
+            f"traefik.http.routers.{name}.service": str(site),
+            f"traefik.http.routers.{name}.middlewares": ",".join(middlewares),
+        }
+    return labels

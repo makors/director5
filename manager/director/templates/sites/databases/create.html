@@ -1,0 +1,21 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Create database · {{ site.name }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page dt-create-page">
+    <a class="dt-back-link" href="{% url 'databases:detail' site.id %}">← Database</a>
+    <header class="dt-project-header"><h1>Create database</h1></header>
+    {% include "sites/partials/navigation.html" with active_tab="database" can_edit=True %}
+    {% if form.fields.host.queryset.exists %}
+      <form method="post" data-dt-form class="dt-create-form">
+        {% csrf_token %}{{ form.non_field_errors }}
+        <div class="dt-form-field">{{ form.host.label_tag }}{{ form.host }}{{ form.host.errors }}</div>
+        <p class="dt-muted">A dedicated database and user will be created for {{ site.name }}.</p>
+        <button class="dt-btn-primary" type="submit">Create database</button>
+      </form>
+    {% else %}
+      <p class="dt-muted">No database servers are configured. An administrator can add one in Director administration.</p>
+    {% endif %}
+  </div>
+{% endblock %}

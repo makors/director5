@@ -1,0 +1,34 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}Review site requests · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page">
+    <div class="dt-page-heading"><h1>Review site requests</h1></div>
+    <div class="dt-project-settings">
+      {% for entry in requests %}
+        <section class="dt-project-block" aria-labelledby="request-{{ entry.request.id }}">
+          {% include "sites/governance/_request_summary.html" %}
+          {% if entry.form %}
+            <form method="post" action="{% url 'sites:request-teacher' %}" data-dt-form class="mt-4" aria-labelledby="request-{{ entry.request.id }}">
+              {% csrf_token %}
+              <input type="hidden" name="request" value="{{ entry.request.id }}">
+              {% if entry.form.action.errors %}<div class="dt-error-list" role="alert">{{ entry.form.action.errors }}</div>{% endif %}
+              <div class="dt-form-field">
+                <label class="flex items-start gap-3 py-3" for="{{ entry.form.agreement.id_for_label }}">
+                  {{ entry.form.agreement }}
+                  <span>I am aware of the <a class="underline" href="{% url 'sites:guidelines-read' %}">Guidelines for Web Pages</a> and have reviewed this with the above student. This student is responsible and can be trusted with the requested services of the Computer Systems Lab.</span>
+                </label>
+                {% if entry.form.agreement.errors %}<div id="{{ entry.form.agreement.auto_id }}_error" class="dt-error-list" role="alert">{{ entry.form.agreement.errors }}</div>{% endif %}
+              </div>
+              <div class="dt-form-actions">
+                <button type="submit" class="dt-btn-primary" name="action" value="accept">Approve</button>
+                <button type="submit" class="dt-btn-outline" name="action" value="reject">Reject</button>
+              </div>
+            </form>
+          {% endif %}
+        </section>
+      {% empty %}<p class="dt-muted">No site requests are assigned to you.</p>{% endfor %}
+    </div>
+  </div>
+{% endblock %}

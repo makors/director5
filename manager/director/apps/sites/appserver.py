@@ -37,6 +37,11 @@ class Appserver:
         """Returns the protocol to use for connecting to the appserver."""
         return "https" if settings.DIRECTOR_APPSERVER_SSL else "http"
 
+    @staticmethod
+    def auth_headers() -> dict[str, str]:
+        token = getattr(settings, "DIRECTOR_APPSERVER_TOKEN", "")
+        return {"Authorization": f"Bearer {token}"} if token else {}
+
     @classmethod
     def list_pingable(cls) -> list[Self]:
         """Return a list of all pingable appservers."""
@@ -53,7 +58,9 @@ class Appserver:
             Whether or not the host is pingable and responded correctly.
         """
         try:
-            response = requests.get(f"{cls.protocol()}://{host}/ping", {"message": f"pong-{host}"})
+            response = requests.get(
+                f"{cls.protocol()}://{host}/ping", {"message": f"pong-{host}"}, timeout=5
+            )
             return response.status_code == 200 and response.json().get("message") == f"pong-{host}"
         except Exception:  # noqa: BLE001
             return False
@@ -71,7 +78,11 @@ class Appserver:
         assert path.startswith("/")
         try:
             response = requests.request(
-                method.upper(), f"{self.protocol()}://{self.host}{path}", json=data
+                method.upper(),
+                f"{self.protocol()}://{self.host}{path}",
+                json=data,
+                headers=self.auth_headers(),
+                timeout=(5, 300),
             )
         except (
             requests.ConnectionError,
@@ -84,7 +95,7 @@ class Appserver:
             requests.RequestException,
             requests.JSONDecodeError,
         ) as e:
-            e.add_note(f"Failed to connect to {path} ({method=}) on {self}: {data=}")
+            e.add_note(f"Failed to connect to {path} ({method=}) on {self}")
             raise
 
         return response

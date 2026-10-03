@@ -1,0 +1,22 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}{{ title }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page dt-form-page">
+    <div class="dt-page-heading"><h1>{{ title }}</h1></div>
+    <p>{{ description }}</p>
+    {% if used %}<p role="alert">This image is currently used by a site and cannot be deleted.</p>{% endif %}
+    <form method="post" data-dt-form>
+      {% csrf_token %}
+      <div class="dt-form-field">
+        <label for="delete-image-confirmation">Type <strong>{{ name }}</strong> to confirm</label>
+        <input class="dt-input" id="delete-image-confirmation" name="confirmation" required autocomplete="off" spellcheck="false">
+      </div>
+      <div class="dt-form-actions">
+        <button type="submit" class="dt-btn-danger" {% if used %}disabled{% endif %}>Delete</button>
+        <a class="dt-inline-link" href="{% url 'sites:image-catalog' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -4,8 +4,14 @@ from .models import (
     Action,
     Database,
     DatabaseHost,
+    DockerImage,
+    DockerImageSetupCommand,
+    Domain,
     Operation,
     Site,
+    SitePendingUser,
+    SiteRequest,
+    SiteResourceLimits,
 )
 
 
@@ -31,3 +37,9 @@ class DatabaseAdmin(admin.ModelAdmin):
 
 admin.site.register(Operation)
 admin.site.register(Action)
+admin.site.register(Domain)
+admin.site.register(DockerImage)
+admin.site.register(DockerImageSetupCommand)
+admin.site.register(SiteRequest)
+admin.site.register(SitePendingUser)
+admin.site.register(SiteResourceLimits)

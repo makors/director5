@@ -1,0 +1,26 @@
+http:
+  routers:
+    director-assets:
+      rule: "Host(`director.makors.xyz`) && (PathPrefix(`/static/`) || PathPrefix(`/media/`))"
+      entryPoints: [websecure]
+      service: director-assets
+      priority: 100
+      tls:
+        certResolver: letsencrypt
+    director-manager:
+      rule: "Host(`director.makors.xyz`)"
+      entryPoints: [websecure]
+      service: director-manager
+      tls:
+        certResolver: letsencrypt
+  services:
+    director-manager:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://manager:8080"
+    director-assets:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://assets:80"

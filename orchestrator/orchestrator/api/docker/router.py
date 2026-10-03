@@ -1,5 +1,6 @@
 import contextlib
-import shutil
+import json
+import shlex
 import traceback
 from pathlib import Path
 from typing import Any
@@ -8,12 +9,35 @@ import docker
 import docker.errors
 from fastapi import APIRouter, HTTPException
 
-from . import services
+from orchestrator.api.files.storage import FileOperationError, SiteFiles, file_error
+
+from . import gateway, services
+from .build_context import build_context
 from .schema import ContainerLimits, ExceptionInfo, SiteInfo
 
 router = APIRouter()
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
+
+
+def _build_dockerfile(site: SiteInfo, files: SiteFiles) -> str:
+    """Keep a user Dockerfile intact when building an approved catalog image."""
+    setup = site.image_setup
+    if setup is None:
+        try:
+            return files.read("Dockerfile")["content"]
+        except FileNotFoundError:
+            default = (TEMPLATE_DIR / "Dockerfile").read_text()
+            files.write("Dockerfile", default.encode("utf-8"), create_only=True)
+            return default
+    if setup.run_script_template is not None:
+        files.write("run.sh", setup.run_script_template.encode("utf-8"), mode="755")
+    lines = [f"FROM {setup.base_image}"]
+    commands = [command for command in setup.setup_commands if command.strip()]
+    if setup.packages:
+        commands.append(f"{setup.install_command_prefix} {shlex.join(setup.packages)}")
+    lines.extend("RUN " + json.dumps(["/bin/sh", "-c", command]) for command in commands)
+    return "\n".join(lines) + "\n"
 
 
 @router.post(
@@ -28,23 +52,30 @@ def build_image(
 ) -> dict[str, Any]:
     client = docker.from_env()
 
-    site_dir = site.directory_path()
-    dockerfile_path = site_dir / "Dockerfile"
-    # make sure a valid dockerfile always exists
-    if not dockerfile_path.exists():
-        default_dockerfile = TEMPLATE_DIR / "Dockerfile"
-        shutil.copy(default_dockerfile, dockerfile_path)
-
     # caching or storing intermediate images takes up a
     # ton of space.
     try:
-        _image, log = client.images.build(
-            path=str(site_dir),
-            dockerfile=str(dockerfile_path),
-            rm=True,
-            container_limits=resource_limits,  # type: ignore[assignment]
-            tag=str(site),
-        )
+        with SiteFiles(site) as files:
+            dockerfile = _build_dockerfile(site, files)
+            with build_context(files, dockerfile) as context:
+                _image, log = client.images.build(
+                    fileobj=context,
+                    custom_context=True,
+                    dockerfile="Dockerfile",
+                    rm=True,
+                    container_limits=resource_limits,  # type: ignore[assignment]
+                    tag=str(site),
+                )
+    except (FileOperationError, OSError) as exc:
+        error = file_error(exc) if isinstance(exc, OSError) else exc
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "user_error": True,
+                "description": "Invalid build files",
+                "explanation": str(error),
+            },
+        ) from exc
     except docker.errors.BuildError as e:
         raise HTTPException(
             status_code=500,
@@ -64,14 +95,13 @@ def build_image(
                 "explanation": e.explanation,
             },
         ) from e
-
     return {"build_stdout": tuple(log)}
 
 
 @router.post("/image/delete")
 def delete_image(site: SiteInfo):
     client = docker.from_env()
-    with contextlib.suppress(docker.errors.ImageNotFound, docker.errors.APIError):
+    with contextlib.suppress(docker.errors.NotFound):
         client.images.remove(str(site))
     return {}
 
@@ -84,12 +114,37 @@ def update_docker_service(site_info: SiteInfo):
     """
     params = services.create_service_params(site_info)
     client = docker.from_env()
+    try:
+        custom_mount = gateway.prepare_gateway(client, site_info)
+    except docker.errors.DockerException as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "user_error": True,
+                "description": "Invalid Nginx configuration",
+                "explanation": "The configuration could not be applied. Check its syntax and retry.",
+            },
+        ) from exc
+    if custom_mount is not None and site_info.type_ == "static":
+        params["mounts"].append(custom_mount)
+    if custom_mount is not None and site_info.type_ == "dynamic":
+        params["labels"] = {}
     service = services.find_service_by_name(client, str(site_info))
     try:
         if service is None:
             client.services.create(**params)
         else:
-            service.update(**params)
+            # Updating an unchanged spec otherwise leaves the existing process running.
+            service.update(**params, force_update=True)
+        proxy = services.find_service_by_name(client, f"{site_info}-proxy")
+        if custom_mount is not None and site_info.type_ == "dynamic":
+            proxy_params = gateway.gateway_params(site_info, custom_mount)
+            if proxy is None:
+                client.services.create(**proxy_params)
+            else:
+                proxy.update(**proxy_params, force_update=True)
+        elif proxy is not None:
+            proxy.remove()
     except docker.errors.APIError as e:
         raise HTTPException(
             status_code=500,
@@ -106,6 +161,11 @@ def remove_docker_service(site: SiteInfo):
     client = docker.from_env()
     service = services.find_service_by_name(client, str(site))
     if service is not None:
-        with contextlib.suppress(docker.errors.APIError):
+        with contextlib.suppress(docker.errors.NotFound):
             service.remove()
+    proxy = services.find_service_by_name(client, f"{site}-proxy")
+    if proxy is not None:
+        with contextlib.suppress(docker.errors.NotFound):
+            proxy.remove()
+    gateway.remove_config(site)
     return {}

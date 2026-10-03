@@ -13,17 +13,20 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
 
-from director.apps.sites.consumers import urlpatterns as sites_urlpatterns
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "director.settings")
 
 # Initialize Django ASGI application early to ensure the AppRegistry
 # is populated before importing code that may import ORM models.
 django_asgi_app = get_asgi_application()
 
+from director.apps.sites.consumers import urlpatterns as sites_urlpatterns  # noqa: E402
+from director.apps.sites.runtime_consumers import urlpatterns as runtime_urlpatterns  # noqa: E402
+
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
-        "websocket": AllowedHostsOriginValidator(AuthMiddlewareStack(URLRouter(sites_urlpatterns))),
+        "websocket": AllowedHostsOriginValidator(
+            AuthMiddlewareStack(URLRouter(sites_urlpatterns + runtime_urlpatterns))
+        ),
     }
 )

@@ -11,34 +11,22 @@
       {% endblock title %}
     </title>
     {% include "meta.html" %}
+    <link rel="preload" href="{% static 'fonts/geist-sans.woff2' %}" as="font" type="font/woff2" crossorigin>
 
     {% block head %}
       <link rel="stylesheet"
             href="{% static "tailwind/build.css" %}"
             type="text/css">
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-            rel="stylesheet">
-      <script defer
-              src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.14.8/cdn.js"
-              integrity="sha512-9pBoQWH5nbYAzoNQy3KkxHn6UDIEfuz7VGPb++0kkcPHaYbe/Obfbd1F2dNbJ1lfuAPQ52Y3Lw1QFO3za2Bxug=="
-              crossorigin="anonymous"
-              referrerpolicy="no-referrer"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.4/htmx.min.js"
-              integrity="sha512-2kIcAizYXhIn8TzUvqzEDZNuDZ+aW7yE/+f1HJHXFjQcGNfv1kqzJSTBRBSlOgp6B/KZsz1K0a3ZTqP9dnxioQ=="
-              crossorigin="anonymous"
-              referrerpolicy="no-referrer"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"
-              integrity="sha512-TPh2Oxlg1zp+kz3nFA0C5vVC6leG/6mm1z9+mA81MI5eaUVqasPLO8Cuk4gMF4gUfP5etR73rgU/8PNMsSesoQ=="
-              crossorigin="anonymous"
-              referrerpolicy="no-referrer"></script>
+      <script defer src="{% static 'general/dist/alpine.min.js' %}"></script>
+      <script src="{% static 'general/dist/htmx.min.js' %}"></script>
+      <script src="{% static 'general/dist/popper.min.js' %}"></script>
       <script src="{% static "general/directorlib.js" %}"></script>
+      <script defer src="{% static 'general/site-ui.js' %}"></script>
       {% django_htmx_script %}
     {% endblock %}
   </head>
   <body>
-    <main>
+    <a class="dt-skip-link" href="#main-content">Skip to content</a>
       {% block before_content %}
         <template id="component-templates">
           {% include "components/reusable/tooltip.html" %}
@@ -46,8 +34,18 @@
           {% include "components/reusable/snackbar.html" %}
 
         </template>
-        <div class="flex fixed inset-0 top-4 flex-col px-2 md:right-4 md:bottom-4 md:inset-auto md:top-auto md:gap-4 h-fit"
+        <div class="fixed inset-0 top-4 flex h-fit flex-col px-2 md:inset-auto md:top-auto md:right-4 md:bottom-4 md:gap-4"
              id="tooltip-holder"></div>
+      {% endblock %}
+    <main id="main-content" tabindex="-1">
+      {% block messages %}
+      {% if messages %}
+        <div class="dt-messages" aria-live="polite">
+          {% for message in messages %}
+            <div class="dt-message {% if message.tags %}dt-message-{{ message.tags }}{% endif %}" role="status">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
       {% endblock %}
       {% block main %}{% endblock %}
     </main>

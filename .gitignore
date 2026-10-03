@@ -168,3 +168,20 @@ pyc-autocomplete/
 
 /docker/
 **/tailwind/build.css
+!manager/director/static/tailwind/build.css
+/work/
+
+# Deployment state and isolated UI preview data stay on the local machine.
+/dev/production/state/
+/dev/ui-preview/*.sqlite3*
+/dev/ui-preview/fixture_files/
+/dev/ui-preview/media/
+/dev/ui-preview/static/
+/dev/ui-preview/public/
+/dev/ui-preview/*manifest.json
+/dev/ui-preview/fixture-responses.json
+
+# Pinned browser dependencies are source assets, not generated Python distributions.
+!manager/director/static/general/dist/
+!manager/director/static/general/dist/*.js
+!manager/director/static/general/dist/LICENSES.txt

@@ -1,14 +1,22 @@
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Any, Self
+from urllib.parse import urlsplit
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator
-from django.db import models
+from django.db import IntegrityError, models, transaction
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 if TYPE_CHECKING:
     from ..users.models import User
+
+
+class OperationInProgressError(Exception):
+    """A site already has an operation that has not finished."""
 
 
 class SiteQuerySet(models.QuerySet):
@@ -83,6 +91,11 @@ class Site(models.Model):
     )
 
     description = models.TextField(blank=True)
+    admin_comments = models.TextField(blank=True, default="")
+    custom_nginx_config = models.TextField(blank=True, default="")
+    docker_image = models.ForeignKey("DockerImage", null=True, blank=True, on_delete=models.PROTECT)
+    image_packages = models.TextField(blank=True, default="")
+    image_write_run_script = models.BooleanField(default=False)
 
     mode = models.CharField(max_length=10, choices=TYPES)
 
@@ -122,53 +135,197 @@ class Site(models.Model):
     def __str__(self):
         return self.name
 
+    def clean(self):
+        super().clean()
+        if self.name in getattr(settings, "WHITELISTED_SITE_NAMES", []):
+            return
+        if self.name in getattr(settings, "BLACKLISTED_SITE_NAMES", []):
+            raise ValidationError({"name": "This site name is not allowed."})
+        for pattern in getattr(settings, "BLACKLISTED_SITE_REGEXES", []):
+            try:
+                if re.search(pattern, self.name):
+                    raise ValidationError({"name": "This site name is not allowed."})
+            except re.error as exc:
+                raise ValidationError(
+                    {"name": "Site name validation is misconfigured. Contact an administrator."}
+                ) from exc
+
     @property
     def is_served(self) -> bool:
         return self.availability == "enabled"
 
     @property
+    def status(self) -> str:
+        try:
+            return self.operation.status
+        except Operation.DoesNotExist:
+            return {"enabled": "ready", "not-served": "paused"}.get(self.availability, "disabled")
+
+    @property
+    def status_label(self) -> str:
+        return {
+            "queued": "Queued",
+            "running": "In progress",
+            "failed": "Needs attention",
+            "ready": "Ready",
+            "paused": "Not served",
+            "disabled": "Disabled",
+        }[self.status]
+
+    @property
     def sites_url(self) -> str:
         """Return the default URL where the site is served."""
         default = settings.SITE_URL_FORMATS[None]
-        return settings.SITE_URL_FORMATS.get(self.purpose, default).format(self.name)
+        url = settings.SITE_URL_FORMATS.get(self.purpose, default).format(self.name)
+        if "://" not in url:
+            hostname = urlsplit("//" + url).hostname or ""
+            scheme = (
+                "http" if hostname == "localhost" or hostname.endswith(".localhost") else "https"
+            )
+            url = f"{scheme}://{url}"
+        return url
 
     def channels_group_name(self) -> str:
         """The name of the channel group for this site."""
         return f"site_{self.id}"
 
-    def start_operation(self, ty: str) -> Operation:
+    def start_operation(
+        self, ty: str, *, replace_failed: bool = False, expected_operation_id: int | None = None
+    ) -> Operation:
         from . import operations
 
-        op = Operation.objects.create(site=self, ty=ty)
+        try:
+            with transaction.atomic():
+                # Serialize operation creation on databases with row-level locking.
+                Site.objects.select_for_update().get(pk=self.pk)
+                current = Operation.objects.filter(site=self).first()
+                if expected_operation_id is not None and (
+                    current is None or current.pk != expected_operation_id
+                ):
+                    raise OperationInProgressError(
+                        "This operation changed. Refresh the page before retrying."
+                    )
+                if current:
+                    if not replace_failed or current.status != "failed":
+                        raise OperationInProgressError(
+                            "This site already has an operation in progress."
+                        )
+                    current.action_set.all().delete()
+                    current.delete()
+                op = Operation.objects.create(site=self, ty=ty)
+        except IntegrityError as exc:
+            raise OperationInProgressError(
+                "This site already has an operation in progress."
+            ) from exc
         operations.send_operation_updated_message(self)
         return op
 
     def list_domains(self) -> list[str]:
         """Returns all the domains for a site."""
         return [
-            ("https://" + domain) for domain in self.domain_set.values_list("domain", flat=True)
+            ("https://" + domain)
+            for domain in self.domain_set.filter(status="active").values_list("domain", flat=True)
         ] + [self.sites_url]
 
-    def serialize_resource_limits(self) -> dict[str, float]:
+    def serialize_resource_limits(self) -> dict[str, Any]:
         """Serialize the resource limits for the appservers."""
-        # TODO: implement custom resource limits
-        return {
+        limits = {
             "cpus": settings.DIRECTOR_RESOURCES_DEFAULT_CPUS,
             "memory": settings.DIRECTOR_RESOURCES_DEFAULT_MEMORY_LIMIT,
             "max_request_body_size": settings.DIRECTOR_RESOURCES_MAX_REQUEST_BODY,
         }
+        try:
+            custom = self.resource_limits
+        except SiteResourceLimits.DoesNotExist:
+            return limits
+        for key in limits:
+            value = getattr(custom, key)
+            if value not in (None, "", 0):
+                limits[key] = value
+        return limits
 
     def serialize_for_appserver(self) -> dict[str, Any]:
+        routes = []
+        for url in self.list_domains():
+            parsed = urlsplit(url)
+            path_prefix = parsed.path.rstrip("/") + "/"
+            routes.append({"host": parsed.hostname, "path_prefix": path_prefix})
         data = {
             "pk": self.id,
-            "hosts": self.list_domains(),
+            "hosts": list(dict.fromkeys(route["host"] for route in routes)),
+            "routes": routes,
             "is_served": self.is_served,
             "type_": self.mode,
             "resource_limits": self.serialize_resource_limits(),
         }
         if self.database is not None:
             data["db"] = self.database.serialize_for_appserver()
+        data["custom_nginx_config"] = self.custom_nginx_config
         return data
+
+
+class DockerImageSetupCommand(models.Model):
+    name = models.CharField(max_length=100)
+    command = models.TextField()
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return self.name
+
+
+class DockerImage(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    friendly_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    is_user_visible = models.BooleanField(default=False)
+    setup_commands = models.ManyToManyField(DockerImageSetupCommand, blank=True)
+    base_install_command = models.TextField(blank=True)
+    install_command_prefix = models.CharField(max_length=255, blank=True)
+    run_script_template = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.friendly_name or self.name
+
+
+class SiteResourceLimits(models.Model):
+    site = models.OneToOneField(Site, on_delete=models.CASCADE, related_name="resource_limits")
+    cpus = models.FloatField(null=True, blank=True)
+    memory = models.CharField(max_length=32, blank=True)
+    max_request_body_size = models.BigIntegerField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Resource limits for {self.site.name}"
+
+
+class SitePendingUser(models.Model):
+    username = models.CharField(max_length=32, unique=True)
+    sites = models.ManyToManyField(Site, related_name="pending_users")
+
+    def __str__(self):
+        return self.username
+
+
+class SiteRequest(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="requested_sites"
+    )
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="site_requests"
+    )
+    request_date = models.DateTimeField(auto_now_add=True)
+    teacher_approval = models.BooleanField(null=True, default=None)
+    admin_approval = models.BooleanField(null=True, default=None)
+    admin_comments = models.TextField(blank=True)
+    private_admin_comments = models.TextField(blank=True)
+    activity = models.CharField(max_length=32)
+    extra_information = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.activity
 
 
 class DatabaseHost(models.Model):
@@ -210,6 +367,8 @@ class Database(models.Model):
 
     host = models.ForeignKey(DatabaseHost, on_delete=models.CASCADE)
     password = models.CharField(max_length=255, null=False, blank=False)
+    provisioned = models.BooleanField(default=False)
+    pending_password = models.CharField(max_length=255, blank=True, default="")
 
     site: Site
 
@@ -227,7 +386,7 @@ class Database(models.Model):
     def serialize_for_appserver(self) -> dict[str, str]:
         return {
             "url": self.redacted_db_url,
-            "name": self.site.name,
+            "name": self.username,
             "username": self.username,
             "password": self.password,
         }
@@ -248,6 +407,7 @@ class Domain(models.Model):
         # Disabled (respected in generation of configuration, but currently no provisions for
         # setting domains to inactive)
         ("inactive", "Inactive"),
+        ("removing", "Removal pending"),
         # This domain was removed from the Site it was added to. All records of it should be
         # removed.
         ("deleted", "Deleted"),
@@ -277,6 +437,15 @@ class Domain(models.Model):
     )
 
     status = models.CharField(max_length=8, choices=STATUSES, default="active")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower("domain"),
+                condition=models.Q(status__in=["active", "inactive", "blocked", "removing"]),
+                name="unique_reserved_domain",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.domain} ({self.site})"
@@ -322,6 +491,8 @@ class Operation(models.Model):
         ("restart_site", "Restarting site"),
         # Tries to ensure everything is correct. Builds the Docker image, and updates the Docker service.
         ("fix_site", "Attempting to fix site"),
+        ("regen_nginx_config", "Updating routing configuration"),
+        ("update_availability", "Updating public access"),
     ]
 
     site = models.OneToOneField(Site, null=False, on_delete=models.PROTECT)
@@ -335,6 +506,28 @@ class Operation(models.Model):
     @property
     def has_started(self) -> bool:
         return self.started_time is not None
+
+    @property
+    def kind_label(self) -> str:
+        return "Rebuild and deploy" if self.ty == "fix_site" else self.get_ty_display()
+
+    @property
+    def status(self) -> str:
+        actions = list(self.action_set.all())
+        if any(action.result is False for action in actions):
+            return "failed"
+        return "running" if self.has_started else "queued"
+
+    @property
+    def status_label(self) -> str:
+        return {"queued": "Queued", "running": "In progress", "failed": "Failed"}[self.status]
+
+    @property
+    def progress(self) -> int:
+        actions = list(self.action_set.all())
+        if not actions:
+            return 0
+        return round(100 * sum(action.result is True for action in actions) / len(actions))
 
     def list_actions_in_order(self) -> models.QuerySet[Action]:
         return self.action_set.order_by("id")

@@ -1,0 +1,7 @@
+<form method="get" action="{% url 'sites:docs-search' %}" class="dt-site-toolbar" role="search">
+  <div class="dt-search">
+    <label class="sr-only" for="docs-query">Search documentation</label>
+    <input type="search" id="docs-query" name="q" value="{{ q }}" maxlength="200" placeholder="Search documentation…" required>
+  </div>
+  <button class="dt-btn-outline" type="submit">Search</button>
+</form>

@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.db import models
@@ -30,6 +32,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(auto_now_add=True)
 
     accepted_guidelines = models.BooleanField(default=False, null=False)
+    is_service = models.BooleanField(default=False)
 
     @property
     def full_name(self) -> str:
@@ -43,3 +46,25 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __repr__(self) -> str:
         return f"<User: {self.username} ({self.id})>"
+
+
+class MassEmail(models.Model):
+    limit_users = models.ManyToManyField(User, blank=True, related_name="+")
+    subject = models.CharField(max_length=200)
+    text_html = models.TextField()
+    text_plain = models.TextField()
+    sender = models.ForeignKey(
+        User, null=True, on_delete=models.SET_NULL, related_name="sent_emails"
+    )
+    created_time = models.DateTimeField(auto_now_add=True)
+    sent_time = models.DateTimeField(null=True, default=None)
+    status = models.CharField(
+        max_length=16,
+        default="queued",
+        choices=[("queued", "Queued"), ("sent", "Sent"), ("failed", "Failed")],
+    )
+    request_id = models.UUIDField(default=uuid.uuid4, unique=True)
+    recipient_emails = models.JSONField(default=list, blank=True)
+
+    def __str__(self):
+        return self.subject

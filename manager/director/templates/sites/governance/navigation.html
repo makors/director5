@@ -1,0 +1,4 @@
+{% if user.is_student %}<a href="{% url 'sites:request-status' %}">Site requests</a>{% endif %}
+{% if user.is_teacher %}<a href="{% url 'sites:request-teacher' %}">Review site requests{% if pending_teacher_requests %} ({{ pending_teacher_requests }}){% endif %}</a>{% endif %}
+{% if user.is_superuser %}<a href="{% url 'sites:request-admin' %}">Process site requests{% if pending_admin_requests %} ({{ pending_admin_requests }}){% endif %}</a>{% endif %}
+<a href="{% url 'sites:guidelines-read' %}">Website guidelines</a>

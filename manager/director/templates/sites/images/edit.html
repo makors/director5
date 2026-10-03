@@ -1,0 +1,17 @@
+{% extends "base_with_nav.html" %}
+
+{% block title %}{{ title }} · Director{% endblock %}
+
+{% block main %}
+  <div class="dt-page dt-form-page">
+    <div class="dt-page-heading"><h1>{{ title }}</h1></div>
+    <form method="post" data-dt-form>
+      {% csrf_token %}
+      {% include "sites/images/fields.html" %}
+      <div class="dt-form-actions">
+        <button type="submit" class="dt-btn-primary">{{ button_label }}</button>
+        <a href="{{ cancel_url }}" class="dt-inline-link">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}
