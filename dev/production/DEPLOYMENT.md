@@ -129,3 +129,98 @@ Use `docker compose logs manager celery orchestrator traefik` for failures and
 uses the minimal Alpine default; select an approved image and a suitable
 `run.sh` before expecting an application server. A local browser UI preview
 does not establish that these production services work.
+
+## Automatic application updates from GitHub
+
+Pushing to `makors/director5` branch **`director5-handoff`** runs CI. Only a push
+whose lint, Manager/Orchestrator tests, updater safety tests, and documentation
+build all pass reaches the `production` deployment job. Pull requests and other
+branches never receive deployment credentials. The job and server both check
+that the tested full commit SHA is still the branch tip. Concurrent updates are
+serialized in Actions and rejected while the server lock is held.
+
+This updates application code only. The root-owned production Compose file,
+private `.env`, bootstrap/settings mounts, network/database configuration,
+Traefik, SSH host key, ACME state, media, and hosted-site files remain in place.
+Changes to `dev/production` configuration or the updater itself require a
+separate reviewed administrator installation. Do not use first-install
+`deploy.sh` for routine application updates after enabling this workflow.
+
+One-time setup (review these files before using sudo):
+
+1. Create a dedicated Ed25519 key pair used only by this repository's deployment
+   job. Keep the private key out of Git and out of application images.
+2. Copy `install-deploy-access.sh`, `deploy-ssh-entrypoint.py`, and
+   `update-existing.py`, plus the **public** key, to a private staging directory
+   on the server. Run `sudo ./install-deploy-access.sh /absolute/public-key.pub`
+   from that directory. The installer requires an existing Director installation
+   and refuses to replace an existing `director-deploy` account.
+3. In the GitHub repository's **production environment**, configure secrets
+   `DIRECTOR_DEPLOY_SSH_KEY` (the dedicated private key) and
+   `DIRECTOR_DEPLOY_KNOWN_HOSTS` (the host's verified administrative SSH host-key
+   entry). Obtain the host key through the already trusted administrative
+   connection; do not trust an unauthenticated keyscan. This is the server SSH
+   listener, normally port 22, not Director's site SSH gateway on port 2222.
+4. Optional environment variables `DIRECTOR_DEPLOY_HOST` and
+   `DIRECTOR_DEPLOY_PORT` override `135.148.41.70` and `22`. A nonstandard port
+   requires the matching `[hostname]:port` known-hosts entry. Restrict the
+   environment to `director5-handoff`. Required environment reviewers pause
+   automatic runs, so configure them only if manual deployment approval is wanted.
+5. Protect the deployment branch and workflow files according to repository
+   policy. Anyone allowed to push deployable code can change code running with
+   Director's privileges; the forced SSH command narrows shell access, not the
+   trust placed in application code. Trigger the first run by pushing the branch.
+
+The account has a locked password, no Docker group membership, a root-owned
+restricted `authorized_keys`, and no usable interactive SSH command. Its forced
+command accepts only `deploy <40-character lowercase SHA>` and uses a narrow
+sudo entry to invoke the root-owned updater. The updater itself validates the
+argument again and downloads only the fixed repository's exact GitHub archive
+over HTTPS. It rejects traversal, links, devices, duplicates, and oversized
+archives. Server HTTPS access to GitHub and its public API is required; public
+API rate limits fail closed before stopping the app.
+
+Each update builds an image tagged with the tested SHA, snapshots the static
+volume, stops only Manager, Celery, Orchestrator, and the site SSH gateway, then
+backs up the Manager database with `pg_dump -Fc`. It runs the existing production
+initialization command (migrations, static collection, catalog bootstrap),
+Django deployment checks, and application health checks. The GitHub runner then
+checks public Manager HTTPS. Existing hosted web containers and database engines
+continue running. Manager and interactive sessions have a brief maintenance
+interruption while these app services change.
+
+Backups, source archives, and private logs are kept under
+`/opt/director5-production/state/releases/<commit>-<unique>/`; only root can read
+them. Successful deployment metadata is in `state/deployed-commit.json`. Disk
+retention is administrator-managed; nothing automatically deletes old backups
+or images. Protect these backups as credentials and personal data.
+
+On a server-side failure after stopping the app, the updater attempts to restore
+the previous application image and prior static files. Extra new static files
+may remain but old paths are restored. **This is not a database rollback.**
+Migrations may already have committed. Automatic deployments must use schema
+changes compatible with both the old and new application versions; destructive
+or incompatible migrations require a separately planned maintenance deployment.
+If old-image health checks fail, stop and inspect the private log and database
+backup. Never automatically restore a database over new user writes. A failure
+of the runner's final public HTTPS check reports a failed job and requires
+investigation; it does not revert a healthy server through an unrelated network
+failure.
+
+Image selection is retained in `state/application-image.yaml`. For manual app
+inspection/restarts, include that override:
+
+```bash
+cd /opt/director5-production
+sudo docker compose --env-file .env -f compose.yaml -f state/application-image.yaml ps
+```
+
+After updating the updater files themselves, an administrator must review and
+replace `/usr/local/sbin/director5-update` and
+`/usr/local/libexec/director5-deploy-ssh`; the existing-account installer guard is
+intentional. Local safety checks require no server or Docker:
+
+```bash
+python3 -m unittest discover -s dev/production/tests -v
+bash -n dev/production/install-deploy-access.sh
+```

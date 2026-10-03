@@ -61,6 +61,9 @@ jobs:
         working-directory: manager
         run: uv run --package manager pytest
 
+      - name: Test production update safety
+        run: python -m unittest discover -s dev/production/tests -v
+
       - name: Run Tests on Orchestrator
         working-directory: orchestrator
         run: uv run --package orchestrator pytest
@@ -83,3 +86,65 @@ jobs:
       - name: Build Docs
         working-directory: docs
         run: uv run just html-strict
+
+  deploy:
+    name: Deploy tested Director application
+    needs: [lint, test, docs]
+    if: github.event_name == 'push' && github.repository == 'makors/director5' && github.ref == 'refs/heads/director5-handoff'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production
+    permissions:
+      contents: read
+    concurrency:
+      group: director5-production
+      cancel-in-progress: false
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Skip a superseded commit
+        id: tip
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          branch_tip=$(git ls-remote https://github.com/makors/director5.git refs/heads/director5-handoff | cut -f1)
+          if [[ "$branch_tip" == "$DEPLOY_SHA" ]]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'A newer commit is on the deployment branch; skipping this deployment.'
+          fi
+
+      - name: Deploy over restricted SSH
+        if: steps.tip.outputs.current == 'true'
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          DEPLOY_HOST: ${{ vars.DIRECTOR_DEPLOY_HOST || '135.148.41.70' }}
+          DEPLOY_PORT: ${{ vars.DIRECTOR_DEPLOY_PORT || '22' }}
+          DEPLOY_KEY: ${{ secrets.DIRECTOR_DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DIRECTOR_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          [[ -n "$DEPLOY_KEY" && -n "$DEPLOY_KNOWN_HOSTS" ]]
+          [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ && "$DEPLOY_HOST" =~ ^[a-zA-Z0-9.-]+$ && "$DEPLOY_PORT" =~ ^[0-9]+$ ]]
+          umask 077
+          deploy_dir=$(mktemp -d)
+          trap 'rm -rf "$deploy_dir"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" > "$deploy_dir/key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$deploy_dir/known_hosts"
+          unset DEPLOY_KEY DEPLOY_KNOWN_HOSTS
+          ssh -T -i "$deploy_dir/key" -p "$DEPLOY_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$deploy_dir/known_hosts" -o ConnectTimeout=15 \
+            -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+            "director-deploy@$DEPLOY_HOST" "deploy $DEPLOY_SHA"
+
+      - name: Verify public Manager HTTPS
+        if: steps.tip.outputs.current == 'true'
+        run: |
+          curl --fail --silent --show-error --retry 6 --retry-all-errors --retry-delay 5 \
+            --connect-timeout 10 --max-time 30 --output /dev/null \
+            https://director.makors.xyz/accounts/login/

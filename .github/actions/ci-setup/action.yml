@@ -18,8 +18,10 @@ runs:
 
     - name: Install dependencies
       shell: bash
+      env:
+        CI_DEPENDENCY_GROUP: ${{ inputs.group }}
       run: |
-        if [ -n "${{ inputs.group }}" ]; then
-          exec uv sync --only-group "${{ inputs.group }}"
+        if [ -n "$CI_DEPENDENCY_GROUP" ]; then
+          exec uv sync --frozen --all-packages --no-default-groups --group "$CI_DEPENDENCY_GROUP"
         fi
-        exec uv sync
+        exec uv sync --frozen --all-packages
