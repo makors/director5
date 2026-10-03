@@ -65,3 +65,20 @@ key/secret and the owner's actual Ion username/email. DNS must be confirmed afte
 server preparation. Live Ion authentication, TLS and complete hosting flows are
 not established by sample screenshots or isolated tests. Follow DEPLOYMENT.md
 before claiming a production deployment or complete operational parity.
+
+## Updated screenshot follow-up
+
+A second explicit Opus MCP call (resolved model `claude-opus-5-5`, agent
+`ab3b9ec6757cb2dfb`) visually inspected ten updated screenshots: desktop Overview
+and Terminal; mobile Settings, Create, initial Files, Database and Images; mobile
+and 320px editor viewports; and the 320px administrator account menu. It reported
+no release-blocking visual or usability regressions. It confirmed that initial
+Files now shows the empty editor state and that editor footer controls fit at
+both 390px and 320px. Partially visible inactive tabs and horizontally scrolling
+code/connection fields were considered expected behavior.
+
+The production image `director5-production:local` built successfully on the
+server from UI commit `dc13dc5`. Buildx and Compose were extracted into the
+staging tools directory, leaving system packages unchanged. A simulated package
+installation would add only docker-buildx and docker-compose-v2 (no upgrades or
+removals). Production services have not been started.
