@@ -12,6 +12,21 @@ values in `.env`. Both directories are on the destination Linux host. Docker
 Engine with the Compose v2 plugin and OpenSSH `ssh-keygen` must be installed.
 The destination uses systemd to watch DNS readiness after deployment.
 
+Traefik is pinned to `v3.7.13`, the supported release checked on October 3, 2026.
+Docker Engine 29 requires a newer Docker API than Traefik 3.2's client uses;
+[automatic API negotiation landed in 3.6.1](https://github.com/traefik/traefik/releases/tag/v3.6.1).
+The [3.6 support window has ended](https://doc.traefik.io/traefik/deprecation/releases/),
+so use the pinned [3.7.13 release](https://github.com/traefik/traefik/releases/tag/v3.7.13)
+rather than lowering Docker's minimum API version or restarting the host daemon.
+For an existing installation, validate Compose, pull `traefik`, then recreate
+only that service with `docker compose --env-file .env up -d --no-deps traefik`.
+Keep the existing ACME bind mount. The edge replacement briefly interrupts HTTP,
+HTTPS, and open WebSockets; hosted containers and databases keep running.
+Verify Manager and hosted-site HTTPS plus browser terminals after replacement.
+The [minor-version migration notes](https://doc.traefik.io/traefik/migrate/v3/)
+include stricter request-path normalization and header handling; applications
+relying on ambiguous paths or unusual headers need particular attention.
+
 Inspect the host's existing ports, Docker networks, Swarm state, `/data`, and
 files before making changes. This configuration uses a single Docker Swarm
 manager: hosted images are local to that node and site files are local bind

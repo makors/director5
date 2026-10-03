@@ -60,11 +60,10 @@ and 2222 were free; no Director installation or site data directories existed.
 Source and a private mode-600 environment file were staged in
 `/home/bryce/director5-staging`. Actual credentials are never stored in this repo.
 
-Production startup still requires sudo authentication, the registered Ion client
-key/secret and the owner's actual Ion username/email. DNS must be confirmed after
-server preparation. Live Ion authentication, TLS and complete hosting flows are
-not established by sample screenshots or isolated tests. Follow DEPLOYMENT.md
-before claiming a production deployment or complete operational parity.
+Production services are now deployed. Ion credentials and admin identity were
+saved privately in the server environment; sudo authentication was supplied in
+the existing director tmux deployment window. DNS records `director` and
+`*.sites` now point to `135.148.41.70`, DNS-only, with no conflicting AAAA.
 
 ## Updated screenshot follow-up
 
@@ -77,8 +76,47 @@ Files now shows the empty editor state and that editor footer controls fit at
 both 390px and 320px. Partially visible inactive tabs and horizontally scrolling
 code/connection fields were considered expected behavior.
 
-The production image `director5-production:local` built successfully on the
-server from UI commit `dc13dc5`. Buildx and Compose were extracted into the
-staging tools directory, leaving system packages unchanged. A simulated package
-installation would add only docker-buildx and docker-compose-v2 (no upgrades or
-removals). Production services have not been started.
+## Production verification completed
+
+The production image `director5-production:local` was built from UI commit
+`dc13dc5`. Docker Compose and Buildx were installed without upgrading or removing
+other packages. Production services are running; Manager, Orchestrator and data
+services report healthy. The unrelated Webtop service remains running.
+
+The initial Traefik 3.2 image could not negotiate Docker 29's API. Only Director's
+proxy was updated to pinned 3.7.13, preserving ACME storage and all application
+containers. Valid public HTTPS works for Manager and hosted static/dynamic sites.
+
+- Real Ion login completed in the user's browser. Bryce Conrad is associated with
+  Ion and retains administrator access. The account menu shows the user's name.
+- Temporary static and dynamic sites passed file save/read, binary upload/download,
+  restart and rebuild. Exact expected content was fetched over verified public TLS
+  from the user's Mac for both sites.
+- PostgreSQL and MySQL each passed creation, query, password rotation and deletion.
+- Public WebSocket and external SSH sessions executed verified shell commands.
+  SSH used a host key obtained over the trusted administrative SSH connection.
+- A live browser terminal on the user's devclub site connected and executed a
+  harmless printf command, then disconnected. No site files were changed.
+- Test sites 1/2 and the temporary test user were deleted through normal operations;
+  short-lived test sessions/tickets were revoked. User-created devclub was preserved.
+- Live production desktop/mobile captures are included separately from the original
+  sample-data gallery.
+
+## Remaining limitations and deliberate differences
+
+SMTP delivery is not configured or live-tested, so notification and mass-email
+capabilities are not operationally verified. Governance/teacher workflows and
+custom-domain scenarios have automated coverage but were not exercised with real
+users/domains in production. No claim of exhaustive live feature parity is made.
+
+Requests from the Manager container back to the server's public hostname timed
+out during smoke tests. Equivalent external HTTPS, WSS and SSH tests passed;
+container-to-public-address routing remains an environment limitation to investigate
+if applications need that path. Internal service/database operations passed.
+
+Director5 uses one-time SSH credentials rather than Director4 Kerberos, and shells
+run in disposable site workspaces rather than attaching to the serving container.
+Failed-operation recovery deliberately refuses active/queued operations.
+
+Credentials were not committed. Source changes are committed locally; no push was
+performed. See dev/production/DEPLOYMENT.md for deployment and recovery procedures.
