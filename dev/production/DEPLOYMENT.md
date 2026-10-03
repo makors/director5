@@ -132,7 +132,7 @@ does not establish that these production services work.
 
 ## Automatic application updates from GitHub
 
-Pushing to `makors/director5` branch **`director5-handoff`** runs CI. Only a push
+Pushing to `makors/director5` branch **`director5-handoff`** runs CI. A manual CI run on the same branch supports checked retries. Only a push or manual run
 whose lint, Manager/Orchestrator tests, updater safety tests, and documentation
 build all pass reaches the `production` deployment job. Pull requests and other
 branches never receive deployment credentials. The job and server both check

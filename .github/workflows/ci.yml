@@ -2,6 +2,7 @@ name: CI
 on:
   - push
   - pull_request
+  - workflow_dispatch
 
 env:
   CI: 1
@@ -90,7 +91,7 @@ jobs:
   deploy:
     name: Deploy tested Director application
     needs: [lint, test, docs]
-    if: github.event_name == 'push' && github.repository == 'makors/director5' && github.ref == 'refs/heads/director5-handoff'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.repository == 'makors/director5' && github.ref == 'refs/heads/director5-handoff'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: production
