@@ -16,7 +16,7 @@
   <div class="dt-page dt-project-page">
     {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab="terminal" can_edit=True %}
-    <div class="dt-page-heading"><h2>{% if kind == 'database' %}Database terminal{% else %}Terminal{% endif %}</h2></div>
+    <div class="dt-page-heading dt-context-heading"><h2>{% if kind == 'database' %}Database terminal{% else %}Terminal{% endif %}</h2></div>
     <p class="dt-muted">{% if kind == 'database' %}Connect to your site's database using its own account.{% else %}Open a workspace shell to edit this site's files, even while the website is stopped. Closing the connection ends this terminal session.{% endif %}</p>
     <form id="terminal-connect" method="post" action="{% url 'sites:terminal_session' site.id %}">
       {% csrf_token %}
@@ -27,8 +27,10 @@
         <span id="terminal-status" role="status" aria-live="polite">Disconnected</span>
       </div>
     </form>
+    <div class="dt-terminal-surface">
     <p id="terminal-guidance" class="dt-muted">Select Connect to start a terminal session.</p>
     <div id="site-terminal" class="dt-runtime-terminal" role="region" aria-label="Interactive site terminal"></div>
+    </div>
     <p class="dt-terminal-ssh-link"><a class="dt-inline-link" href="{% url 'sites:ssh' site.id %}">SSH access</a></p>
   </div>
 {% endblock main %}

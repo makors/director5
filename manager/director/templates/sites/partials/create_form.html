@@ -14,7 +14,7 @@
     </div>
   {% endif %}
   {% for field in form.visible_fields %}
-    {% if field.name != 'description' and field.name != 'student_agreement' %}
+    {% if field.name != 'description' and field.name != 'users' and field.name != 'student_agreement' %}
       {% if field.name == 'mode' %}
       <fieldset class="dt-form-field" aria-describedby="{{ field.auto_id }}_helptext{% if field.errors %} {{ field.auto_id }}_error{% endif %}" {% if field.errors %}aria-invalid="true"{% endif %}>
           <legend>{{ field.label }}</legend>
@@ -62,25 +62,24 @@
       {% endif %}
     {% endif %}
   {% endfor %}
-  {% with field=form.description %}
-    <div class="dt-form-field">
-      <label for="{{ field.id_for_label }}">{{ field.label }} <span class="dt-muted">(optional)</span></label>
-      {{ field }}
-      {% if field.help_text %}
-        <p id="{{ field.auto_id }}_helptext" class="dt-muted">{{ field.help_text }}</p>
-      {% endif %}
-      {% if field.errors %}
-        <div id="{{ field.auto_id }}_error" class="dt-error-list" role="alert">
-          {% for error in field.errors %}<p>{{ error }}</p>{% endfor %}
+  <details class="dt-create-options" id="create-additional-options" {% if form.users.errors or form.description.errors or form.users.value or form.description.value %}open{% endif %}>
+    <summary>Additional options <span class="dt-muted">Members and description</span></summary>
+    {% for field in form.visible_fields %}
+      {% if field.name == 'users' or field.name == 'description' %}
+        <div class="dt-form-field">
+          <label for="{{ field.id_for_label }}">{{ field.label }} <span class="dt-muted">(optional)</span></label>
+          {{ field }}
+          {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="dt-muted">{{ field.help_text }}</p>{% endif %}
+          {% if field.errors %}<div id="{{ field.auto_id }}_error" class="dt-error-list" role="alert">{% for error in field.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
         </div>
       {% endif %}
-    </div>
-  {% endwith %}
+    {% endfor %}
+  </details>
   {% if form.student_agreement %}
     {% with field=form.student_agreement %}
       <div class="dt-form-field">
         <label for="{{ field.id_for_label }}">{{ field }} <span>{{ field.label }}</span></label>
-        {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="dt-muted">{{ field.help_text }}</p>{% endif %}
+        {% if field.help_text %}<details class="dt-create-agreement" {% if field.errors %}open{% endif %}><summary>Read the website agreement</summary><p id="{{ field.auto_id }}_helptext" class="dt-muted">{{ field.help_text }}</p></details>{% endif %}
         {% if field.errors %}<div id="{{ field.auto_id }}_error" class="dt-error-list" role="alert">{% for error in field.errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
       </div>
     {% endwith %}

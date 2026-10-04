@@ -1,10 +1,11 @@
-<nav class="dt-project-tabs" aria-label="Site navigation">
-  <a class="dt-project-tab" data-dashboard-focus="overview-tab" href="{% url 'sites:dashboard' site.id %}" {% if active_tab == 'overview' %}aria-current="page"{% endif %}>Overview</a>
-  {% if can_edit %}
-    <a class="dt-project-tab" href="{% url 'sites:files:browser' site.id %}" {% if active_tab == 'files' %}aria-current="page"{% endif %}>Files</a>
-    <a class="dt-project-tab" href="{% url 'sites:terminal' site.id %}" {% if active_tab == 'terminal' %}aria-current="page"{% endif %}>Terminal</a>
-    <a class="dt-project-tab" href="{% url 'sites:logs' site.id %}" {% if active_tab == 'logs' %}aria-current="page"{% endif %}>Logs</a>
-    <a class="dt-project-tab" href="{% url 'databases:detail' site.id %}" {% if active_tab == 'database' %}aria-current="page"{% endif %}>Database</a>
-  {% endif %}
-  <a class="dt-project-tab" data-dashboard-focus="settings-tab" href="{% url 'sites:settings' site.id %}" {% if active_tab == 'settings' %}aria-current="page"{% endif %}>Settings</a>
-</nav>
+<div class="dt-project-navigation">
+  <nav class="dt-project-tabs" aria-label="Site navigation">
+    {% include "sites/partials/navigation_links.html" with nav_prefix="" %}
+  </nav>
+  <details class="dt-mobile-section" data-dt-menu>
+    <summary data-dashboard-focus="section-menu"><span>{% if active_tab == 'files' %}Files{% elif active_tab == 'terminal' %}Terminal{% elif active_tab == 'logs' %}Logs{% elif active_tab == 'database' %}Database{% elif active_tab == 'settings' %}Settings{% else %}Overview{% endif %}</span><svg class="dt-section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+    <nav aria-label="Site sections">
+      {% include "sites/partials/navigation_links.html" with nav_prefix="mobile-" %}
+    </nav>
+  </details>
+</div>

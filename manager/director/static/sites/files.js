@@ -4,6 +4,8 @@
 	const endpoints = JSON.parse(document.getElementById("file-endpoints").textContent);
 	const csrf = document.querySelector("#file-csrf [name=csrfmiddlewaretoken]").value;
 	const el = (id) => document.getElementById(id);
+	let browserScroll = 0;
+	const mobile = window.matchMedia("(max-width: 850px)");
 	const state = { path: "", file: null, busy: false, files: new Map() };
 	const workspaceKey = `director-files:${root.dataset.workspaceKey}`;
 	const defaults = { fontSize: 13, indent: 4, softTabs: true, wrap: false, lineNumbers: true };
@@ -151,6 +153,7 @@
 		const list = el("file-tabs");
 		list.hidden = state.files.size === 0;
 		el("file-close").hidden = state.files.size === 0;
+		el("file-save").hidden = state.files.size === 0;
 		list.replaceChildren();
 		let index = 0;
 		for (const [path, file] of state.files) {
@@ -202,6 +205,7 @@
 		else {
 			el("file-editor-panel").hidden = true;
 			el("file-back").hidden = true;
+			showFiles();
 			selectedRow();
 			el("file-editor-empty").hidden = false;
 			tabs();
@@ -293,7 +297,10 @@
 		selectedRow();
 		el("file-back").hidden = false;
 		if (reveal) {
-			if (window.matchMedia("(max-width: 850px)").matches) {
+			if (mobile.matches) {
+				if (!root.classList.contains("dt-file-editing")) browserScroll = window.scrollY;
+				root.classList.add("dt-file-editing");
+				editor?.resize();
 				el("file-workspace").focus({ preventScroll: true });
 				el("file-workspace").scrollIntoView({ block: "start" });
 			} else editor?.focus();
@@ -462,10 +469,22 @@
 		activate(path, reveal);
 		message("");
 	}
-	el("file-back").onclick = () => {
-		el("file-list-panel").focus({ preventScroll: true });
-		el("file-list-panel").scrollIntoView({ block: "start" });
-	};
+	function showFiles() {
+		const wasEditing = root.classList.contains("dt-file-editing");
+		root.classList.remove("dt-file-editing");
+		if (mobile.matches && wasEditing) {
+			el("file-list-panel").focus({ preventScroll: true });
+			window.scrollTo({ top: browserScroll, behavior: "instant" });
+		}
+	}
+	el("file-back").onclick = showFiles;
+	mobile.addEventListener("change", () => editor?.resize());
+	root.addEventListener("click", (event) => {
+		const action = event.target.closest(
+			".dt-file-tools button, .dt-file-tools a, .dt-file-options button",
+		);
+		if (action) action.closest("details").open = false;
+	});
 	el("file-refresh").onclick = () => run(() => load());
 	el("file-new").onclick = () =>
 		run(async () => {

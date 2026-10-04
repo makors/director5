@@ -6,9 +6,9 @@
   <div class="dt-page dt-project-page">
     {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab="database" can_edit=True %}
-    <div class="dt-page-heading"><h2>Database</h2></div>
+    <div class="dt-page-heading dt-context-heading"><h2>Database</h2></div>
     {% if database %}
-      <section class="dt-project-block">
+      <section class="dt-project-block dt-first-section">
         <h2>{{ database.host.get_dbms_display }}</h2>
         {% if not database.provisioned %}<p class="dt-project-notice">Database setup has not finished. Follow the operation on <a href="{% url 'sites:dashboard' site.id %}">Overview</a>.</p>{% endif %}
         <dl class="dt-project-meta">

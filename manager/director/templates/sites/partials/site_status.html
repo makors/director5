@@ -19,7 +19,7 @@
           <form method="post" data-dt-form action="{% url 'sites:rebuild' site.id %}">
             {% csrf_token %}
             <input type="hidden" name="tab" value="{{ dashboard_tab }}">
-            <button class="dt-btn-primary" data-dashboard-focus="rebuild" type="submit">Rebuild and deploy</button>
+            <button class="dt-btn-outline" data-dashboard-focus="rebuild" type="submit">Rebuild and deploy</button>
           </form>
         {% endif %}
       </div>
@@ -45,60 +45,27 @@
         </ul>
       </section>
 
-      {% if can_edit %}
-        <section class="dt-project-block" aria-label="Site actions">
-          <div class="dt-setting-row">
-            <p class="dt-muted">Restart the running service.</p>
-            <form method="post" data-dt-form action="{% url 'sites:restart' site.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="tab" value="{{ dashboard_tab }}">
-              <button class="dt-btn-outline" data-dashboard-focus="restart" type="submit" {% if operation %}disabled{% endif %}>Restart site</button>
-            </form>
-          </div>
-          <div class="dt-setting-row">
-            <p class="dt-muted">Build and deploy the current source files.</p>
-            <form method="post" data-dt-form action="{% url 'sites:rebuild' site.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="tab" value="{{ dashboard_tab }}">
-              <button class="dt-btn-outline" data-dashboard-focus="rebuild" type="submit" {% if operation %}disabled{% endif %}>Rebuild and deploy</button>
-            </form>
-          </div>
-          {% if operation %}
-            <p class="dt-setting-help">{% if operation.status == 'failed' %}Retry the failed operation before starting another.{% else %}Actions are available when the current operation finishes.{% endif %}</p>
-          {% endif %}
-        </section>
-
-        <section class="dt-project-block dt-project-delete" aria-labelledby="delete-site-heading">
-          <details id="delete-site-disclosure">
-            <summary class="dt-project-delete-summary" data-dashboard-focus="delete-summary"><strong id="delete-site-heading">Delete site</strong></summary>
-            <form method="post" data-dt-form action="{% url 'sites:delete' site.id %}" class="dt-project-delete-form">
-              {% csrf_token %}
-              <input type="hidden" name="tab" value="{{ dashboard_tab }}">
-              <p>Deleting the site can also permanently remove its files and database. This cannot be undone.</p>
-              <div class="dt-form-field">
-                <label for="delete-confirmation">Type <strong>{{ site.name }}</strong> to confirm</label>
-                <input id="delete-confirmation" data-dashboard-focus="delete-confirmation" name="confirmation" type="text" required pattern="{{ site.name }}" autocomplete="off" spellcheck="false" aria-describedby="delete-confirmation-help">
-                <p id="delete-confirmation-help" class="dt-muted">The site name must match exactly.</p>
-              </div>
-              <button type="submit" data-dashboard-focus="delete" class="dt-btn-danger" {% if operation and operation.status != 'failed' %}disabled{% endif %}>Permanently delete site</button>
-              {% if operation and operation.status != 'failed' %}<p class="dt-muted">Wait for the current operation to finish before deleting this site.</p>{% endif %}
-            </form>
-          </details>
-        </section>
-      {% endif %}
+      {% include "sites/partials/site_actions.html" %}
     </div>
   {% else %}
     <div class="dt-project-overview">
-      <section class="dt-project-block dt-project-activity" aria-label="Activity" aria-live="polite" aria-atomic="false">
-        <h2>Activity</h2>
-        <p class="dt-muted">Runtime: <span data-runtime-status-url="{% url 'sites:runtime_status' site.id %}">Checking…</span></p>
-        {% if site.admin_comments %}
-          <aside class="dt-project-note" aria-labelledby="admin-comments-title">
-            <h3 id="admin-comments-title">Administrator notes</h3>
-            <p>{{ site.admin_comments|linebreaksbr }}</p>
-          </aside>
-        {% endif %}
-        {% if operation %}
+      <section class="dt-site-summary" aria-label="Site details">
+        <dl class="dt-summary-meta">
+          <div><dt>Runtime</dt><dd data-runtime-status-url="{% url 'sites:runtime_status' site.id %}">Checking…</dd></div>
+          <div><dt>Type</dt><dd>{{ site.get_mode_display }}</dd></div>
+          <div><dt>Purpose</dt><dd>{{ site.get_purpose_display }}</dd></div>
+          <div><dt>Public access</dt><dd>{% if site.is_served %}Enabled{% else %}Disabled{% endif %}</dd></div>
+        </dl>
+        {% if site.description %}<div class="dt-summary-description"><h2>Description</h2><p>{{ site.description|linebreaksbr }}</p></div>{% endif %}
+      </section>
+      {% if site.admin_comments %}
+        <aside class="dt-project-note" aria-labelledby="admin-comments-title">
+          <h2 id="admin-comments-title">Administrator notes</h2>
+          <p>{{ site.admin_comments|linebreaksbr }}</p>
+        </aside>
+      {% endif %}
+      {% if operation %}
+      <section class="dt-deployment-progress" aria-label="Deployment activity" aria-live="polite" aria-atomic="false">
           <div class="dt-operation-heading">
             <h2>{{ operation.kind_label }}</h2>
             <time class="dt-operation-meta" datetime="{{ operation.created_time|date:'c' }}">{{ operation.created_time|date:"M j, Y, g:i A T" }}</time>
@@ -133,20 +100,8 @@
               <li class="dt-muted">Waiting for the worker to begin.</li>
             {% endfor %}
           </ol>
-        {% else %}
-          <p class="dt-project-idle-line dt-muted">No operation in progress.</p>
-        {% endif %}
       </section>
-
-      <section class="dt-project-block" aria-label="Site details">
-        <h2>Site details</h2>
-        <dl class="dt-project-meta">
-          <div><dt>Type</dt><dd>{{ site.get_mode_display }}</dd></div>
-          <div><dt>Purpose</dt><dd>{{ site.get_purpose_display }}</dd></div>
-          <div><dt>Public access</dt><dd>{% if site.is_served %}Enabled{% else %}Disabled{% endif %}</dd></div>
-        </dl>
-        {% if site.description %}<p class="dt-project-description">{{ site.description }}</p>{% endif %}
-      </section>
+      {% endif %}
     </div>
   {% endif %}
 </div>

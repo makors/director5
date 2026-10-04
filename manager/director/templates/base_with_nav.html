@@ -7,15 +7,17 @@
       <a class="dt-brand" href="{% url 'sites:index' %}" aria-label="Director home">Director</a>
       {% if user.is_authenticated %}
         <span class="dt-nav-divider" aria-hidden="true">/</span>
-        <a class="dt-nav-link" href="{% url 'sites:index' %}"
+        {% block navigation_context %}
+        <a class="dt-nav-link{% if site %} dt-sites-breadcrumb{% endif %}" href="{% url 'sites:index' %}"
            {% if request.resolver_match.url_name == 'index' %}aria-current="page"{% endif %}>Sites</a>
         {% if site %}
-          <span class="dt-nav-divider dt-site-breadcrumb" aria-hidden="true">/</span>
+          <span class="dt-nav-divider dt-site-breadcrumb-divider" aria-hidden="true">/</span>
           <a class="dt-nav-site dt-site-breadcrumb" href="{% url 'sites:dashboard' site.id %}">{{ site.name }}</a>
         {% elif request.resolver_match.url_name == 'create' %}
           <span class="dt-nav-divider dt-site-breadcrumb" aria-hidden="true">/</span>
           <span class="dt-nav-site dt-site-breadcrumb">New site</span>
         {% endif %}
+        {% endblock navigation_context %}
       {% endif %}
       <div class="dt-nav-end">
         <a class="dt-docs-link" href="{% url 'sites:docs-index' %}" aria-label="Documentation">Docs</a>
@@ -28,13 +30,18 @@
               <hr>
               <a href="{% url 'sites:create-personal' %}">Personal site</a>
               <hr>
-              {% if user.is_superuser %}
-                <a href="{% url 'sites:management' %}">Management</a>
-                <a href="{% url 'sites:image-catalog' %}">Images</a>
-                <a href="{% url 'sites:resource-list' %}">Resource limits</a>
-                <a href="{% url 'sites:mail-history' %}">Email</a>
+              {% if user.is_staff or user.is_superuser %}
+                <details class="dt-account-section">
+                  <summary>Administration</summary>
+                  {% if user.is_superuser %}
+                    <a href="{% url 'sites:management' %}">Management</a>
+                    <a href="{% url 'sites:image-catalog' %}">Images</a>
+                    <a href="{% url 'sites:resource-list' %}">Resource limits</a>
+                    <a href="{% url 'sites:mail-history' %}">Email</a>
+                  {% endif %}
+                  {% if user.is_staff %}<a href="{% url 'admin:index' %}">Database admin</a>{% endif %}
+                </details>
               {% endif %}
-              {% if user.is_staff %}<a href="{% url 'admin:index' %}">Administration</a>{% endif %}
               <hr>
               <a href="{% url 'sites:docs-index' %}">Documentation</a>
               <hr>

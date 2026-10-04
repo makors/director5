@@ -156,7 +156,10 @@ for source, canonical, role in pages:
                 script.decompose()
         for notice in soup.select("[data-director-preview]"):
             notice.decompose()
-        notice = soup.new_tag("div", id="preview-notice", attrs={"role": "status", "class": "dt-preview-notice"})
+        notice = soup.new_tag("details", id="preview-notice", attrs={"class": "dt-preview-notice"})
+        summary = soup.new_tag("summary")
+        summary.string = "Preview · Sample data · Details"
+        notice.append(summary)
         notice.append("Static UI preview · Sample data. Files are read-only. Hosting, account actions, terminals, database queries, and email require the live Director server. ")
         for text, href in [("Member preview", "/"), ("Admin preview", "/preview/admin/"), ("Teacher review", "/preview/teacher/requests/")]:
             link = soup.new_tag("a", href=href)

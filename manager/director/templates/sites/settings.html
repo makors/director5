@@ -1,38 +1,57 @@
 {% extends "base_with_nav.html" %}
 
+{% load static %}
+
+{% block head %}
+  {{ block.super }}
+  <script defer src="{% static 'sites/settings-ui.js' %}"></script>
+{% endblock head %}
+
 {% block title %}Settings · {{ site.name }} · Director{% endblock title %}
 
 {% block main %}
   <div class="dt-page dt-project-page">
     {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab='settings' %}
-    <div class="dt-page-heading"><h2>Settings</h2></div>
     <div class="dt-project-settings">
       {% if operation %}
         <p class="dt-project-notice">{{ operation.kind_label }} · {{ operation.status_label }}. <a class="dt-inline-link" href="{% url 'sites:dashboard' site.id %}">View operation</a></p>
       {% endif %}
       {% if site.admin_comments and not request.user.is_superuser %}
-        <section class="dt-project-block" aria-labelledby="settings-comments-heading">
+        <section class="dt-settings-section" aria-labelledby="settings-comments-heading">
           <h2 id="settings-comments-heading">Administrator comments</h2>
           <p class="dt-project-description">{{ site.admin_comments }}</p>
         </section>
       {% endif %}
       {% if can_edit %}
-        <section class="dt-project-block" aria-labelledby="settings-meta-heading">
+        <section class="dt-settings-section" aria-labelledby="settings-meta-heading">
           <h2 id="settings-meta-heading">Details</h2>
-          {% include "sites/settings_form.html" with form=meta_form section="meta" action_name="sites:settings-meta" submit_label="Save changes" %}
+          <p class="dt-setting-value">{{ site.description|default:"No description" }}</p>
+          <p class="dt-muted">{{ site.get_purpose_display }}</p>
+          <details class="dt-settings-edit" id="settings-meta-editor" {% if meta_form.is_bound or meta_form.errors %}open{% endif %}>
+            <summary>Edit details</summary>
+          {% include "sites/settings_form.html" with form=meta_form section="meta" action_name="sites:settings-meta" submit_label="Save details" %}
+          </details>
         </section>
-        <section class="dt-project-block" aria-labelledby="settings-name-heading">
+        <section class="dt-settings-section" aria-labelledby="settings-name-heading">
           <h2 id="settings-name-heading">Name</h2>
+          <p class="dt-setting-value">{{ site.name }}</p>
+          <details class="dt-settings-edit" id="settings-name-editor" {% if name_form.is_bound or name_form.errors %}open{% endif %}>
+            <summary>{% if site.purpose == 'user' %}About personal site names{% else %}Edit name{% endif %}</summary>
           {% include "sites/settings_form.html" with form=name_form section="name" action_name="sites:settings-name" submit_label="Rename and deploy" %}
+          </details>
         </section>
-        <section class="dt-project-block" aria-labelledby="settings-type-heading">
+        <section class="dt-settings-section" aria-labelledby="settings-type-heading">
           <h2 id="settings-type-heading">Type</h2>
+          <p class="dt-setting-value">{{ site.get_mode_display }}</p>
+          <details class="dt-settings-edit" id="settings-type-editor" {% if type_form.is_bound or type_form.errors %}open{% endif %}>
+            <summary>Edit type</summary>
           {% include "sites/settings_form.html" with form=type_form section="type" action_name="sites:settings-type" submit_label="Save and deploy" %}
-          <p class="dt-setting-help"><a class="dt-btn-outline" href="{% url 'sites:image-select' site.id %}">Configure Docker image</a>{% if request.user.is_superuser %} · <a class="dt-inline-link" href="{% url 'sites:resource-edit' site.id %}">Edit resource limits</a>{% endif %}</p>
+          </details>
+          <p class="dt-setting-help"><a class="dt-inline-link" href="{% url 'sites:image-select' site.id %}">Configure Docker image</a>{% if request.user.is_superuser %} · <a class="dt-inline-link" href="{% url 'sites:resource-edit' site.id %}">Edit resource limits</a>{% endif %}</p>
         </section>
       {% else %}
-        <section class="dt-project-block" aria-labelledby="settings-meta-heading">
+        <section class="dt-settings-section" aria-labelledby="settings-meta-heading">
           <h2 id="settings-meta-heading">Details</h2>
           <p class="dt-muted">This site is disabled. Contact an administrator to change its settings.</p>
           <dl class="dt-project-meta">
@@ -42,7 +61,7 @@
           {% if site.description %}<p class="dt-project-description">{{ site.description }}</p>{% endif %}
         </section>
       {% endif %}
-      <section class="dt-project-block" aria-labelledby="settings-domain-heading">
+      <section class="dt-settings-section" aria-labelledby="settings-domain-heading">
         <h2 id="settings-domain-heading">Domains</h2>
         <ul class="dt-project-members dt-settings-access-list">
           <li><span>{{ site.sites_url|cut:"https://"|cut:"http://" }}</span><span class="dt-muted">Default</span></li>
@@ -59,11 +78,14 @@
           {% endfor %}
         </ul>
         {% if can_edit %}
+          <details class="dt-settings-edit" id="settings-domain-editor" {% if domain_form.is_bound or domain_form.errors %}open{% endif %}>
+            <summary>Add domain</summary>
           <p class="dt-muted">Point a CNAME or ALIAS record to <code>{{ domain_target }}</code> before adding a domain. DNS is managed with your domain provider.</p>
           {% include "sites/settings_form.html" with form=domain_form section="domain" action_name="sites:settings-domain-add" submit_label="Add domain" %}
+          </details>
         {% endif %}
       </section>
-      <section class="dt-project-block" aria-labelledby="settings-member-heading">
+      <section class="dt-settings-section" aria-labelledby="settings-member-heading">
         <h2 id="settings-member-heading">Members</h2>
         <ul class="dt-project-members dt-settings-access-list">
           {% for member in members %}
@@ -79,17 +101,25 @@
           {% endfor %}
         </ul>
         {% if can_edit %}
+          <details class="dt-settings-edit" id="settings-member-editor" {% if member_form.is_bound or member_form.errors %}open{% endif %}>
+            <summary>Add member</summary>
           <p class="dt-muted">Members can edit the site and manage access. At least one member must remain.</p>
           {% include "sites/settings_form.html" with form=member_form section="member" action_name="sites:settings-member-add" submit_label="Add member" %}
+          </details>
         {% endif %}
       </section>
       {% if request.user.is_superuser %}
-        <section class="dt-project-block" aria-labelledby="settings-admin-heading">
+        <section class="dt-settings-section" aria-labelledby="settings-admin-heading">
           <h2 id="settings-admin-heading">Administration</h2>
-          {% include "sites/settings_form.html" with form=admin_form section="admin" action_name="sites:settings-admin" submit_label="Save changes" %}
+          <p class="dt-setting-value">{% if site.admin_comments %}{{ site.admin_comments }}{% else %}No administrator comments{% endif %}</p>
+          <details class="dt-settings-edit" id="settings-admin-editor" {% if admin_form.is_bound or admin_form.errors %}open{% endif %}>
+            <summary>Edit administration</summary>
+          {% include "sites/settings_form.html" with form=admin_form section="admin" action_name="sites:settings-admin" submit_label="Save administration" %}
+          </details>
           <p class="dt-setting-help"><a class="dt-inline-link" href="{% url 'sites:availability' site.id %}">Edit public access</a></p>
         </section>
       {% endif %}
+      {% include "sites/partials/site_actions.html" with dashboard_tab="settings" %}
     </div>
   </div>
 {% endblock main %}

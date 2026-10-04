@@ -15,9 +15,7 @@
   <div class="dt-page dt-project-page" id="file-browser" data-workspace-key="{{ request.user.pk }}:{{ site.pk }}" data-editor-assets="{% static 'sites/vendor/ace/' %}">
     {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab='files' %}
-    <div class="dt-page-heading">
-      <div><h2 class="dt-file-title">Files</h2><p class="dt-file-help">Website files belong in <code>public/</code>.</p></div>
-    </div>
+    <p class="dt-file-help">Website files belong in <code>public/</code>.</p>
     <form hidden id="file-csrf">{% csrf_token %}</form>
     {{ file_endpoints|json_script:"file-endpoints" }}
     <p id="file-message" class="dt-file-message" role="status" aria-live="polite" hidden></p>
@@ -25,14 +23,14 @@
       <section class="dt-file-panel" id="file-list-panel" aria-label="Site files" tabindex="-1">
         <div class="dt-file-toolbar">
           <nav id="file-breadcrumbs" aria-label="Folder path"></nav>
-          <button type="button" id="file-refresh" class="dt-btn-outline" aria-label="Refresh files">Refresh</button>
-        </div>
-        <div class="dt-file-actions">
-          <button type="button" id="file-new" class="dt-btn-outline">New file</button>
-          <button type="button" id="file-mkdir" class="dt-btn-outline">New folder</button>
-          <button type="button" id="file-upload" class="dt-btn-outline">Upload</button>
+          <details class="dt-file-tools"><summary>Actions</summary><div>
+            <button type="button" id="file-new">New file</button>
+            <button type="button" id="file-mkdir">New folder</button>
+            <button type="button" id="file-upload">Upload files</button>
+            <button type="button" id="file-refresh">Refresh files</button>
+            <a id="file-folder-download" href="{% url 'sites:files:archive' site.id %}">Download ZIP</a>
+          </div></details>
           <input type="file" id="file-upload-input" multiple hidden>
-          <a id="file-folder-download" class="dt-btn-outline" href="{% url 'sites:files:archive' site.id %}">Download ZIP</a>
         </div>
         <div class="dt-file-table-scroll">
           <table class="dt-file-table">
@@ -42,8 +40,11 @@
         </div>
       </section>
       <section class="dt-file-panel dt-file-editor" id="file-workspace" aria-label="Text editor" tabindex="-1">
-        <button type="button" id="file-back" class="dt-file-back dt-file-text-button" hidden>Back to files</button>
-        <div class="dt-file-workspace-heading"><div id="file-tabs" role="tablist" aria-label="Open files" hidden></div><button type="button" id="file-close" class="dt-file-text-button" hidden>Close file</button><button type="button" id="file-preferences" class="dt-file-text-button" aria-label="Editor preferences">Preferences</button></div>
+        <div class="dt-file-workspace-heading">
+          <button type="button" id="file-back" class="dt-file-back dt-file-text-button" hidden>Files</button>
+          <div id="file-tabs" role="tablist" aria-label="Open files" hidden></div>
+          <button type="submit" form="file-editor-form" class="dt-btn-primary" id="file-save" hidden>Save</button>
+        </div>
         <div id="file-editor-empty" class="dt-file-empty"><h2>Open a file</h2><p>Select a text file to edit it here. Binary files are available to download.</p></div>
         <div id="file-editor-panel" role="tabpanel" hidden><form id="file-editor-form">
           <div class="dt-file-editor-heading"><h2 id="file-editor-path"></h2><span id="file-save-state">Saved</span></div>
@@ -51,10 +52,13 @@
           <textarea id="file-content" spellcheck="false" autocapitalize="none" autocomplete="off" wrap="off"></textarea>
           <div id="file-code-editor" role="region" aria-label="File contents" hidden></div>
           <div class="dt-file-editor-footer">
+            <details class="dt-file-options"><summary>Editor options</summary><div>
             <label><input type="checkbox" id="file-executable"> Executable</label>
             <label class="sr-only" for="file-language">Syntax language</label><select id="file-language" aria-label="Syntax language"><option value="auto">Auto detect</option><option value="text">Plain text</option><option value="html">HTML</option><option value="css">CSS</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="json">JSON</option><option value="python">Python</option><option value="php">PHP</option><option value="ruby">Ruby</option><option value="sh">Shell</option><option value="dockerfile">Dockerfile</option><option value="yaml">YAML</option><option value="markdown">Markdown</option><option value="sql">SQL</option><option value="xml">XML</option><option value="ini">INI</option><option value="c_cpp">C / C++</option><option value="java">Java</option><option value="golang">Go</option><option value="rust">Rust</option></select>
             <button type="button" id="file-reload" class="dt-btn-outline">Reload</button>
-            <button type="submit" class="dt-btn-primary" id="file-save">Save</button>
+            <button type="button" id="file-close" class="dt-file-text-button" hidden>Close file</button>
+            <button type="button" id="file-preferences" class="dt-file-text-button">Preferences</button>
+            </div></details>
           </div>
         </form></div>
       </section>

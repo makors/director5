@@ -1,5 +1,6 @@
 """Director4 creation policy and structured, permission-scoped search."""
 
+import re
 from unittest.mock import patch
 
 import pytest
@@ -22,6 +23,33 @@ def create_data(**overrides):
         "student_agreement": True,
         **overrides,
     }
+
+
+def test_creation_optional_fields_start_collapsed_and_agreement_stays_visible(client, student):
+    client.force_login(student)
+    html = client.get(reverse("sites:create")).content.decode()
+    optional = re.search(r'<details[^>]*id="create-additional-options"[^>]*>', html).group()
+    assert "open" not in optional
+    assert html.index("</details>") < html.index('name="student_agreement"')
+
+
+@pytest.mark.parametrize("htmx", (False, True))
+@pytest.mark.parametrize("optional", ({"users": ["unknown"]}, {"description": "Keep this text"}))
+def test_creation_reveals_optional_values_and_errors(client, student, htmx, optional):
+    client.force_login(student)
+    response = client.post(
+        reverse("sites:create"),
+        create_data(name="UPPERCASE", **optional),
+        headers={"HX-Request": "true"} if htmx else {},
+    )
+    html = response.content.decode()
+    tag = re.search(r'<details[^>]*id="create-additional-options"[^>]*>', html).group()
+    assert "open" in tag
+    if "description" in optional:
+        assert optional["description"] in html
+    else:
+        assert response.context["form"].errors["users"]
+    assert not Site.objects.exists()
 
 
 @pytest.mark.parametrize("agreement", (False, ""))

@@ -369,7 +369,7 @@ def test_site_queue_failure_retains_settings_tab(client, student, site, htmx):
             {"tab": "settings"},
             headers={"HX-Request": "true"} if htmx else {},
         )
-    target = reverse("sites:dashboard", args=[site.id]) + "?tab=settings"
+    target = reverse("sites:settings", args=[site.id])
     if htmx:
         assert response["HX-Redirect"] == target
     else:
@@ -377,16 +377,26 @@ def test_site_queue_failure_retains_settings_tab(client, student, site, htmx):
 
 
 @pytest.mark.parametrize("action", ("restart", "rebuild", "retry", "delete"))
-def test_site_action_errors_retain_settings_tab(client, student, site, action):
+@pytest.mark.parametrize("htmx", (False, True))
+def test_site_action_errors_retain_settings_tab(client, student, site, action, htmx):
     client.force_login(student)
     if action != "retry":
         site.start_operation("create_site")
     data = {"tab": "settings", "confirmation": site.name}
-    response = client.post(reverse(f"sites:{action}", args=[site.id]), data)
-    assert response.url == reverse("sites:dashboard", args=[site.id]) + "?tab=settings"
+    response = client.post(
+        reverse(f"sites:{action}", args=[site.id]),
+        data,
+        headers={"HX-Request": "true"} if htmx else {},
+    )
+    target = reverse("sites:settings", args=[site.id])
+    if htmx:
+        assert response["HX-Redirect"] == target
+    else:
+        assert response.url == target
 
 
-def test_delete_validation_error_retains_settings_tab(client, student, site):
+@pytest.mark.parametrize("htmx", (False, True))
+def test_delete_validation_error_retains_settings_tab(client, student, site, htmx):
     client.force_login(student)
     response = client.post(
         reverse("sites:delete", args=[site.id]),
@@ -394,8 +404,13 @@ def test_delete_validation_error_retains_settings_tab(client, student, site):
             "tab": "settings",
             "confirmation": "wrong",
         },
+        headers={"HX-Request": "true"} if htmx else {},
     )
-    assert response.url == reverse("sites:dashboard", args=[site.id]) + "?tab=settings"
+    target = reverse("sites:settings", args=[site.id])
+    if htmx:
+        assert response["HX-Redirect"] == target
+    else:
+        assert response.url == target
 
 
 def test_successful_deletion_from_settings_returns_site_list(client, student, site):

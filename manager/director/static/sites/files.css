@@ -1,156 +1,143 @@
 .dt-file-help {
-	margin: 10px 0 0;
+	margin: 0 0 16px;
 	color: #737373;
 	font-size: 13px;
 }
-.dt-file-title {
-	font-size: 20px;
-	font-weight: 500;
-	margin: 0;
-}
-.dt-file-toolbar .dt-btn-outline {
-	min-height: 32px;
-	padding: 5px 9px;
-	font-size: 12px;
-}
-.dt-file-text-button {
-	border: 0;
-	background: transparent;
-	color: #525252;
-	font: inherit;
-	font-size: 12px;
-	padding: 8px;
-	cursor: pointer;
-}
-.dt-file-text-button:hover {
-	background: #f5f5f5;
-}
 .dt-files-layout {
 	display: grid;
-	grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.2fr);
-	gap: 20px;
-	align-items: start;
-}
-.dt-file-panel {
+	grid-template-columns: minmax(240px, 30%) minmax(0, 1fr);
 	border: 1px solid #e5e5e5;
 	border-radius: 8px;
 	background: #fff;
+}
+.dt-file-panel {
 	min-width: 0;
+	scroll-margin-top: 12px;
+}
+#file-list-panel {
+	border-right: 1px solid #e5e5e5;
 }
 .dt-file-toolbar,
-.dt-file-actions,
-.dt-file-editor-heading,
-.dt-file-editor-footer {
+.dt-file-workspace-heading {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 14px 16px;
+	gap: 8px;
+	min-height: 54px;
+	padding: 8px 12px;
+	border-bottom: 1px solid #e5e5e5;
 }
 .dt-file-toolbar {
 	justify-content: space-between;
-	border-bottom: 1px solid #e5e5e5;
 }
 .dt-file-toolbar nav {
 	display: flex;
-	gap: 6px;
 	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
 	font-size: 13px;
 }
 .dt-file-toolbar nav button,
 .dt-file-name {
+	background: none;
 	border: 0;
 	padding: 0;
-	background: transparent;
 	color: #171717;
-	cursor: pointer;
-	text-align: left;
 	font: inherit;
-}
-.dt-file-toolbar nav button:hover,
-.dt-file-name:hover,
-.dt-file-link:hover {
-	text-decoration: underline;
-}
-.dt-file-actions {
-	flex-wrap: wrap;
-	border-bottom: 1px solid #e5e5e5;
-}
-.dt-file-actions .dt-btn-outline {
-	min-height: 32px;
-	padding: 5px 9px;
-	font-size: 12px;
-}
-.dt-file-link {
-	color: #525252;
-	font-size: 12px;
+	text-align: left;
+	cursor: pointer;
+	overflow-wrap: anywhere;
 }
 .dt-file-table-scroll {
-	overflow-x: auto;
-	min-height: 340px;
+	overflow: auto;
+	min-height: 320px;
+	max-height: min(660px, 70dvh);
 }
 .dt-file-table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 13px;
+	font-size: 12px;
 }
 .dt-file-table th {
-	padding: 12px 16px;
+	padding: 10px 12px;
 	color: #737373;
 	font-weight: 400;
 	text-align: left;
 }
 .dt-file-table td {
-	border-top: 1px solid #f0f0f0;
-	padding: 11px 16px;
+	padding: 5px 12px;
+	border-top: 1px solid #f5f5f5;
 }
 .dt-file-table td:nth-child(2) {
 	color: #737373;
 	white-space: nowrap;
 }
 .dt-file-table td:last-child {
-	width: 44px;
+	width: 32px;
 	padding-left: 0;
 }
 .dt-file-name {
-	overflow-wrap: anywhere;
 	display: flex;
-	gap: 9px;
 	align-items: center;
+	gap: 8px;
+	min-height: 32px;
 }
-.dt-file-type {
-	font-size: 11px;
-	color: #737373;
+.dt-file-selected {
+	background: #eef6ff;
 }
-.dt-file-icon-button,
-.dt-file-menu summary {
-	border: 0;
-	border-radius: 4px;
-	width: 32px;
-	height: 32px;
-	background: transparent;
-	cursor: pointer;
-	color: #525252;
-	display: grid;
-	place-items: center;
+.dt-file-selected td:first-child {
+	box-shadow: inset 3px 0 #087cfc;
 }
-.dt-file-icon-button:hover,
-.dt-file-menu summary:hover {
-	background: #f5f5f5;
-}
-.dt-file-menu {
+.dt-file-menu,
+.dt-file-tools,
+.dt-file-options {
 	position: relative;
 }
-.dt-file-menu summary {
+.dt-file-menu summary,
+.dt-file-tools summary,
+.dt-file-options summary,
+.dt-file-text-button {
+	display: flex;
+	align-items: center;
+	min-height: 32px;
+	padding: 6px 8px;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+	color: #525252;
+	font-size: 12px;
+	cursor: pointer;
+	white-space: nowrap;
 	list-style: none;
 }
-.dt-file-menu summary::-webkit-details-marker {
+.dt-file-menu summary {
+	justify-content: center;
+	width: 32px;
+}
+.dt-file-menu summary::-webkit-details-marker,
+.dt-file-tools summary::-webkit-details-marker,
+.dt-file-options summary::-webkit-details-marker {
 	display: none;
 }
-.dt-file-menu div {
+.dt-file-tools summary::after,
+.dt-file-options summary::after {
+	content: "";
+	width: 6px;
+	height: 6px;
+	border-right: 1px solid currentColor;
+	border-bottom: 1px solid currentColor;
+	transform: rotate(45deg);
+	align-self: center;
+	margin-top: -3px;
+	margin-left: 8px;
+}
+.dt-file-menu div,
+.dt-file-tools > div,
+.dt-file-options > div {
 	position: absolute;
-	z-index: 2;
+	z-index: 5;
 	right: 0;
-	width: 145px;
+	width: 180px;
 	padding: 5px;
 	border: 1px solid #e5e5e5;
 	border-radius: 6px;
@@ -158,49 +145,120 @@
 	box-shadow: 0 6px 18px #0000000d;
 }
 .dt-file-menu button,
-.dt-file-menu a {
+.dt-file-menu a,
+.dt-file-tools button,
+.dt-file-tools a {
 	display: block;
 	width: 100%;
-	border: 0;
+	min-height: 36px;
 	padding: 8px;
+	border: 0;
+	background: none;
 	color: #262626;
-	background: transparent;
 	font: inherit;
+	font-size: 13px;
 	text-align: left;
 	cursor: pointer;
 	border-radius: 3px;
 }
-.dt-file-menu button:hover,
-.dt-file-menu a:hover {
-	background: #f5f5f5;
+.dt-file-options > div {
+	bottom: calc(100% + 4px);
+	left: 0;
+	right: auto;
+	width: 240px;
+	padding: 12px;
+	display: grid;
+	gap: 8px;
+}
+.dt-file-options label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+}
+.dt-file-options select,
+.dt-file-dialog select {
+	min-width: 0;
+	min-height: 36px;
+	border: 1px solid #e5e5e5;
+	border-radius: 5px;
+	padding: 6px;
+	color: #525252;
+	background: #fff;
+	font-size: 13px;
+}
+#file-tabs {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	overflow-x: auto;
+}
+.dt-file-tab {
+	display: flex;
+	flex-shrink: 0;
+}
+.dt-file-tab button {
+	max-width: 180px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-height: 36px;
+	padding: 8px 12px;
+	border: 0;
+	background: none;
+	color: #525252;
+	font-size: 12px;
+	cursor: pointer;
+}
+.dt-file-tab [aria-selected="true"] {
+	color: #171717;
+	box-shadow: inset 0 -2px #087cfc;
+}
+.dt-file-workspace-heading {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	background: #fff;
+	border-radius: 0 8px 0 0;
+}
+#file-save {
+	margin-left: auto;
+	flex-shrink: 0;
 }
 .dt-file-editor-heading {
+	display: flex;
+	align-items: center;
 	justify-content: space-between;
-	border-bottom: 1px solid #e5e5e5;
+	gap: 12px;
+	padding: 10px 12px;
 }
 .dt-file-editor-heading h2 {
-	font-family: monospace;
-	font-size: 13px;
-	font-weight: 500;
 	margin: 0;
 	overflow-wrap: anywhere;
+	font-family: monospace;
+	font-size: 12px;
+	font-weight: 400;
+	color: #737373;
 }
 .dt-file-editor-heading span {
 	white-space: nowrap;
 	color: #737373;
 	font-size: 11px;
 }
+#file-code-editor,
+#file-content {
+	width: 100%;
+	height: clamp(280px, 50dvh, 620px);
+	line-height: 1.6;
+}
 #file-content {
 	display: block;
-	width: 100%;
-	min-height: 405px;
 	resize: vertical;
+	padding: 16px;
 	border: 0;
 	background: #fff;
 	color: #171717;
-	padding: 18px;
 	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-	line-height: 1.6;
 	font-size: 13px;
 	tab-size: 4;
 }
@@ -208,26 +266,22 @@
 	outline: 2px solid #087cfc;
 	outline-offset: -2px;
 }
+#file-code-editor .ace_comment,
+#file-code-editor .ace_operator {
+	color: #4b5563;
+}
 .dt-file-editor-footer {
-	justify-content: flex-end;
+	padding: 4px 8px;
 	border-top: 1px solid #e5e5e5;
 }
-.dt-file-editor-footer label {
-	margin-right: auto;
-	font-size: 12px;
-	color: #525252;
-	display: flex;
-	gap: 6px;
-	align-items: center;
-}
 .dt-file-empty {
-	min-height: 475px;
+	min-height: clamp(320px, 55dvh, 660px);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	padding: 30px;
+	padding: 24px;
 }
 .dt-file-empty h2 {
 	font-size: 15px;
@@ -237,19 +291,22 @@
 .dt-file-empty p {
 	color: #737373;
 	font-size: 13px;
-	max-width: 290px;
+	max-width: 260px;
 	line-height: 1.6;
 }
 .dt-file-message {
-	margin: 0 0 16px;
-	padding: 12px 16px;
-	border: 1px solid #e5e5e5;
-	border-radius: 6px;
+	margin: 0 0 12px;
 	font-size: 13px;
 }
 .dt-file-message[data-error="true"] {
 	color: #b91c1c;
-	border-color: #fecaca;
+}
+.dt-file-back {
+	display: none;
+}
+.dt-files-layout [hidden],
+.dt-file-dialog [hidden] {
+	display: none !important;
 }
 .dt-file-dialog {
 	width: min(440px, calc(100vw - 32px));
@@ -285,164 +342,100 @@
 	gap: 10px;
 	margin-top: 22px;
 }
-@media (max-width: 850px) {
-	.dt-files-layout {
-		grid-template-columns: 1fr;
-	}
-	.dt-file-table-scroll {
-		min-height: 180px;
-	}
-	.dt-file-empty {
-		min-height: 220px;
-	}
-}
-.dt-files-layout [hidden],
-.dt-file-dialog [hidden] {
-	display: none !important;
-}
-.dt-file-workspace-heading {
-	display: flex;
-	align-items: center;
-	border-bottom: 1px solid #e5e5e5;
-	padding: 0 8px;
-	gap: 4px;
-	min-height: 61px;
-}
-#file-tabs {
-	display: flex;
-	flex: 1;
-	min-width: 0;
-	overflow-x: auto;
-}
-.dt-file-tab {
-	display: flex;
-	align-items: center;
-	flex-shrink: 0;
-	border-right: 1px solid #e5e5e5;
-}
-.dt-file-tab button {
-	border: 0;
-	background: transparent;
-	padding: 10px 8px;
-	font-size: 12px;
-	color: #525252;
-	cursor: pointer;
-}
-.dt-file-tab [role="tab"] {
-	max-width: 200px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	padding-left: 12px;
-}
-.dt-file-tab [aria-selected="true"] {
-	color: #171717;
-	box-shadow: inset 0 -2px #087cfc;
-}
-.dt-file-tab button:hover {
-	background: #f5f5f5;
-}
-#file-code-editor {
-	width: 100%;
-	height: 430px;
-	line-height: 1.6;
-}
-.dt-file-editor-footer {
-	flex-wrap: wrap;
-}
-.dt-file-editor-footer select,
-.dt-file-dialog select {
-	border: 1px solid #e5e5e5;
-	border-radius: 5px;
-	padding: 6px;
-	color: #525252;
-	background: #fff;
-	font-size: 12px;
-}
+
 .dt-file-dialog input[type="checkbox"] {
 	width: auto;
-}
-#file-code-editor .ace_comment,
-#file-code-editor .ace_operator {
-	color: #4b5563;
-}
-
-.dt-file-selected {
-	background: #eef6ff;
-}
-.dt-file-selected td:first-child {
-	box-shadow: inset 3px 0 #087cfc;
-}
-.dt-file-text-button {
-	min-height: 32px;
-	border-radius: 6px;
-	white-space: nowrap;
-}
-.dt-file-toolbar {
-	min-height: 61px;
-}
-.dt-file-back {
-	display: none;
-}
-.dt-file-panel {
-	scroll-margin-top: 16px;
 }
 #file-preferences-form label:has(input[type="checkbox"]) {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 }
+@media (hover: hover) and (pointer: fine) {
+	.dt-file-name:hover,
+	.dt-file-toolbar nav button:hover {
+		text-decoration: underline;
+	}
+	.dt-file-menu summary:hover,
+	.dt-file-tools summary:hover,
+	.dt-file-options summary:hover,
+	.dt-file-text-button:hover,
+	.dt-file-tab button:hover,
+	.dt-file-menu button:hover,
+	.dt-file-menu a:hover,
+	.dt-file-tools button:hover,
+	.dt-file-tools a:hover {
+		background: #f5f5f5;
+	}
+}
 @media (max-width: 850px) {
-	.dt-file-back {
+	.dt-files-layout {
 		display: block;
-		margin: 8px 8px 0;
+	}
+	#file-list-panel {
+		border: 0;
+	}
+	#file-workspace {
+		display: none;
+	}
+	.dt-file-editing #file-list-panel {
+		display: none;
+	}
+	.dt-file-editing #file-workspace {
+		display: block;
+	}
+	.dt-file-back {
+		display: flex;
 	}
 	.dt-file-workspace-heading {
-		flex-wrap: wrap;
-		padding: 8px;
+		padding: 4px 8px;
+		gap: 4px;
+		border-radius: 8px 8px 0 0;
 	}
-	#file-tabs {
-		flex-basis: 100%;
+	.dt-file-tab button {
+		max-width: 140px;
+		padding-inline: 8px;
 	}
-	#file-preferences {
-		margin-left: auto;
+	.dt-file-table-scroll {
+		min-height: 280px;
+		max-height: 65dvh;
 	}
-	.dt-file-toolbar .dt-btn-outline,
-	.dt-file-actions .dt-btn-outline,
+	.dt-file-menu summary,
+	.dt-file-name,
 	.dt-file-text-button,
 	.dt-file-tab button,
+	.dt-file-toolbar nav button,
+	.dt-file-tools summary,
+	.dt-file-options summary,
 	.dt-file-menu button,
 	.dt-file-menu a,
-	.dt-file-toolbar nav button,
-	.dt-file-name {
+	.dt-file-tools button,
+	.dt-file-tools a,
+	.dt-file-options button,
+	#file-save {
 		min-height: 44px;
 	}
-	.dt-file-icon-button,
 	.dt-file-menu summary {
 		width: 44px;
-		height: 44px;
 	}
-	.dt-file-table td {
-		padding: 4px 12px;
-	}
-	.dt-file-editor-footer {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto auto;
-		gap: 8px;
-		padding: 12px;
-	}
-	.dt-file-editor-footer label:not(.sr-only) {
-		grid-column: 1 / -1;
-		min-height: 44px;
-	}
-	.dt-file-editor-footer select,
+	.dt-file-options select,
 	.dt-file-dialog select {
-		min-width: 0;
 		min-height: 44px;
 		font-size: 16px;
 	}
-	.dt-file-editor-footer button {
-		min-height: 44px;
-		padding-inline: 10px;
+	#file-code-editor,
+	#file-content {
+		height: clamp(240px, calc(100dvh - 190px), 720px);
 	}
+	.dt-file-editor-heading {
+		padding-block: 8px;
+	}
+}
+
+.dt-file-table:has(tbody tr:nth-child(4))
+	tbody
+	tr:nth-last-child(-n + 3)
+	.dt-file-menu
+	div {
+	bottom: 100%;
 }

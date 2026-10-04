@@ -1,0 +1,8 @@
+  <a class="dt-project-tab" data-dashboard-focus="{{ nav_prefix }}overview-tab" href="{% url 'sites:dashboard' site.id %}" {% if active_tab == 'overview' %}aria-current="page"{% endif %}>Overview</a>
+  {% if can_edit %}
+    <a class="dt-project-tab" href="{% url 'sites:files:browser' site.id %}" {% if active_tab == 'files' %}aria-current="page"{% endif %}>Files</a>
+    <a class="dt-project-tab" href="{% url 'sites:terminal' site.id %}" {% if active_tab == 'terminal' %}aria-current="page"{% endif %}>Terminal</a>
+    <a class="dt-project-tab" href="{% url 'sites:logs' site.id %}" {% if active_tab == 'logs' %}aria-current="page"{% endif %}>Logs</a>
+    <a class="dt-project-tab" href="{% url 'databases:detail' site.id %}" {% if active_tab == 'database' %}aria-current="page"{% endif %}>Database</a>
+  {% endif %}
+  <a class="dt-project-tab" data-dashboard-focus="{{ nav_prefix }}settings-tab" href="{% url 'sites:settings' site.id %}" {% if active_tab == 'settings' %}aria-current="page"{% endif %}>Settings</a>

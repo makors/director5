@@ -1,5 +1,6 @@
 """Verify site settings permissions, domain ownership, and deployment lifecycle."""
 
+import re
 from unittest.mock import patch
 
 import pytest
@@ -64,6 +65,54 @@ def test_settings_mutation_requires_csrf(student, site):
     assert site.description == ""
 
 
+def test_settings_editors_start_collapsed_with_current_values(client, student, site):
+    client.force_login(student)
+    response = client.get(endpoint("", site))
+    html = response.content.decode()
+    for section in ("meta", "name", "type", "domain", "member"):
+        tag = re.search(rf'<details[^>]*id="settings-{section}-editor"[^>]*>', html).group()
+        assert "open" not in tag
+    assert site.name in html
+    assert "No description" in html
+
+
+def test_settings_exposes_site_actions_with_confirmation_and_return_tab(client, student, site):
+    client.force_login(student)
+    html = client.get(endpoint("", site)).content.decode()
+    for action in ("restart", "rebuild", "delete"):
+        assert f'action="{reverse(f"sites:{action}", args=[site.id])}"' in html
+        button = re.search(rf'<button[^>]*data-dashboard-focus="{action}"[^>]*>', html).group()
+        assert "disabled" not in button
+    assert html.count('name="tab" value="settings"') == 3
+    confirmation = re.search(r'<input[^>]*id="delete-confirmation"[^>]*>', html).group()
+    assert "required" in confirmation
+    assert f'pattern="{site.name}"' in confirmation
+    assert 'name="confirmation"' in confirmation
+
+
+@pytest.mark.parametrize("failed", (False, True))
+def test_settings_actions_respect_active_and_failed_operations(client, student, site, failed):
+    if failed:
+        failed_operation(site, "restart_site")
+    else:
+        site.start_operation("restart_site")
+    client.force_login(student)
+    html = client.get(endpoint("", site)).content.decode()
+    for action in ("restart", "rebuild", "delete"):
+        button = re.search(rf'<button[^>]*data-dashboard-focus="{action}"[^>]*>', html).group()
+        assert ("disabled" in button) == (action != "delete" or not failed)
+
+
+@pytest.mark.parametrize("administrator", (False, True))
+def test_disabled_site_settings_actions_are_admin_only(client, student, admin, site, administrator):
+    site.availability = "disabled"
+    site.save(update_fields=["availability"])
+    client.force_login(admin if administrator else student)
+    html = client.get(endpoint("", site)).content.decode()
+    for action in ("restart", "rebuild", "delete"):
+        assert (f'data-dashboard-focus="{action}"' in html) == administrator
+
+
 def test_disabled_site_has_read_only_settings_and_comments(client, student, site):
     site.availability = "disabled"
     site.admin_comments = "Please contact the hosting team."
@@ -119,6 +168,11 @@ def test_invalid_rename_keeps_saved_heading_and_bound_input(client, student, sit
     form = response.context["form"] if htmx else response.context["name_form"]
     assert form["name"].value() == "UPPERCASE"
     assert form.errors["name"]
+    if not htmx:
+        editor = re.search(
+            r'<details[^>]*id="settings-name-editor"[^>]*>', response.content.decode()
+        ).group()
+        assert "open" in editor
     assert response.context["site"].name == "test-site"
     site.refresh_from_db()
     assert site.name == "test-site"

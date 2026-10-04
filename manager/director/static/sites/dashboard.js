@@ -7,6 +7,7 @@
 		const input = document.getElementById("delete-confirmation");
 		const disclosure = document.getElementById("delete-site-disclosure");
 		drafts.set(event.target, {
+			sectionOpen: status?.querySelector(".dt-mobile-section")?.open || false,
 			focusKey: status?.contains(focusedControl) ? focusedControl.dataset.dashboardFocus : null,
 			confirmation:
 				input && disclosure
@@ -34,6 +35,8 @@
 		}
 
 		const status = document.getElementById("site-status");
+		const section = status?.querySelector(".dt-mobile-section");
+		if (section) section.open = draft.sectionOpen;
 		const focusedControl = Array.from(
 			status?.querySelectorAll("[data-dashboard-focus]") || [],
 		).find((control) => control.dataset.dashboardFocus === draft.focusKey);

@@ -1493,7 +1493,7 @@ input:where([type='file']):focus {
 
 :root {
   color-scheme: light;
-  --dt-bg: #fafafa;
+  --dt-bg: #fff;
   --dt-ink: #171717;
   --dt-muted: #666;
   --dt-border: #e5e5e5;
@@ -1879,7 +1879,7 @@ main:focus {
 
 .dt-site-table-heading {
   padding: 10px 0;
-  background: var(--dt-bg);
+  background: #fafafa;
   border-bottom: 1px solid var(--dt-border);
   color: var(--dt-muted);
   font-size: 12px;
@@ -2730,10 +2730,9 @@ main:focus {
 }
 
 .dt-project-block {
-  padding: 20px;
-  border: 1px solid var(--dt-border);
-  border-radius: 8px;
-  background: #fff;
+  padding: 24px 0;
+  border-top: 1px solid var(--dt-border);
+  background: transparent;
 }
 
 .dt-project-block > h2,
@@ -2978,7 +2977,7 @@ main:focus {
 
 @media (max-width: 640px) {
   .dt-project-block {
-    padding: 16px;
+    padding: 20px 0;
   }
 
   .dt-project-settings .dt-project-block + .dt-project-block {
@@ -3070,8 +3069,459 @@ main:focus {
 }
 
 .dt-project-tabs[data-scrolled="true"][data-overflow="true"] {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 18px), transparent);
-          mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 18px), transparent);
+  -webkit-mask-image: linear-gradient(
+		to right,
+		transparent,
+		#000 14px,
+		#000 calc(100% - 18px),
+		transparent
+	);
+          mask-image: linear-gradient(
+		to right,
+		transparent,
+		#000 14px,
+		#000 calc(100% - 18px),
+		transparent
+	);
+}
+
+/* Task-focused layouts: compact summaries, explicit mobile navigation, inline editing. */
+
+.dt-project-overview {
+  gap: 28px;
+}
+
+.dt-summary-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  padding: 12px 0 28px;
+}
+
+.dt-summary-meta dt,
+.dt-summary-description h2 {
+  color: var(--dt-muted);
+  font-size: 13px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+
+.dt-summary-meta dd {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.dt-summary-description {
+  border-top: 1px solid var(--dt-border);
+  padding-top: 24px;
+}
+
+.dt-summary-description p {
+  max-width: 720px;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+
+.dt-deployment-progress {
+  padding-top: 24px;
+  border-top: 1px solid var(--dt-border);
+}
+
+.dt-project-note {
+  margin: 0;
+  padding: 16px;
+  background: #fafafa;
+  border-left: 2px solid var(--dt-border);
+  border-radius: 0;
+}
+
+.dt-project-note h2 {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.dt-mobile-section {
+  display: none;
+}
+
+.dt-settings-section {
+  position: relative;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--dt-border);
+}
+
+.dt-settings-section:first-child {
+  padding-top: 4px;
+}
+
+.dt-settings-section > h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.dt-setting-value {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+
+.dt-settings-edit {
+  margin-top: 12px;
+  max-width: 680px;
+}
+
+.dt-settings-edit > summary,
+.dt-create-options > summary {
+  cursor: pointer;
+  width: -moz-fit-content;
+  width: fit-content;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  list-style: none;
+}
+
+.dt-settings-edit > summary::after,
+.dt-create-options > summary::after {
+  content: "+";
+  color: var(--dt-muted);
+}
+
+.dt-settings-edit[open] > summary::after,
+.dt-create-options[open] > summary::after {
+  content: "−";
+}
+
+.dt-settings-edit > summary::-webkit-details-marker,
+.dt-create-options > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dt-settings-edit > form,
+.dt-settings-edit > div {
+  margin-top: 16px;
+}
+
+.dt-settings-edit .dt-btn-primary {
+  background: #fff;
+  border-color: #d4d4d4;
+  color: var(--dt-ink);
+}
+
+.dt-settings-edit .dt-btn-primary:hover:not(:disabled) {
+  background: #fafafa;
+  border-color: #a3a3a3;
+}
+
+.dt-settings-edit .dt-form-actions {
+  margin-top: 16px;
+}
+
+.dt-create-options {
+  padding: 12px 0;
+  border-top: 1px solid var(--dt-border);
+  border-bottom: 1px solid var(--dt-border);
+  margin-bottom: 24px;
+}
+
+.dt-create-options[open] > summary {
+  margin-bottom: 16px;
+}
+
+.dt-account-section > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 8px;
+  min-height: 36px;
+  line-height: 20px;
+  max-width: none;
+}
+
+.dt-account-section > summary::after {
+  content: "+";
+  color: var(--dt-muted);
+}
+
+.dt-account-section[open] > summary::after {
+  content: "−";
+}
+
+.dt-account-section > a {
+  padding-left: 20px;
+}
+
+@media (max-width: 640px) {
+  .dt-nav {
+    flex-wrap: nowrap;
+  }
+
+  .dt-sites-breadcrumb,
+	.dt-site-breadcrumb-divider {
+    display: none;
+  }
+
+  .dt-nav-site.dt-site-breadcrumb {
+    display: inline;
+    min-width: 0;
+    max-width: 28vw;
+    font-size: 13px;
+  }
+
+  .dt-nav-end {
+    flex-shrink: 0;
+  }
+
+  .dt-account > summary {
+    max-width: min(42vw, 190px);
+  }
+
+  .dt-project-header {
+    gap: 12px;
+    padding-bottom: 16px;
+  }
+
+  .dt-project-domain {
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  .dt-project-actions,
+	.dt-project-actions form,
+	.dt-project-actions .dt-btn-primary {
+    width: auto;
+  }
+
+  .dt-project-actions .dt-btn-outline {
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+
+  .dt-project-navigation > .dt-project-tabs {
+    display: none;
+  }
+
+  .dt-mobile-section {
+    display: block;
+    position: relative;
+    margin: 0 0 24px;
+    border-bottom: 1px solid var(--dt-border);
+  }
+
+  .dt-mobile-section > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .dt-mobile-section > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .dt-section-chevron {
+    font-size: 20px;
+    color: var(--dt-muted);
+  }
+
+  .dt-mobile-section > nav {
+    position: absolute;
+    top: 48px;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    padding: 4px;
+    border: 1px solid var(--dt-border);
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 8px 20px #0000000d;
+  }
+
+  .dt-mobile-section .dt-project-tab {
+    padding: 0 12px;
+    border: 0;
+    min-height: 44px;
+    margin: 0;
+    border-radius: 4px;
+  }
+
+  .dt-mobile-section .dt-project-tab[aria-current="page"] {
+    background: var(--dt-brand-tint);
+    color: var(--dt-brand-strong);
+  }
+
+  .dt-summary-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+    padding-top: 0;
+  }
+
+  .dt-settings-section {
+    padding: 20px 0;
+  }
+
+  .dt-settings-edit > summary,
+	.dt-create-options > summary,
+	.dt-account-section > summary {
+    min-height: 44px;
+  }
+}
+
+.dt-project-settings {
+  gap: 0;
+}
+
+.dt-settings-section {
+  position: relative;
+}
+
+.dt-settings-section > h2 {
+  padding-right: 160px;
+}
+
+.dt-settings-section .dt-project-description {
+  margin-top: 8px;
+}
+
+.dt-settings-section:first-child {
+  padding-top: 20px;
+}
+
+.dt-settings-edit {
+  margin-top: 0;
+}
+
+.dt-settings-edit > summary {
+  position: absolute;
+  top: 10px;
+  right: 0;
+}
+
+.dt-settings-edit[open] {
+  margin-top: 16px;
+}
+
+.dt-create-options > summary {
+  flex-wrap: wrap;
+}
+
+.dt-create-agreement > summary {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  color: var(--dt-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dt-create-agreement > summary::after {
+  content: "+";
+  margin-left: 8px;
+}
+
+.dt-create-agreement[open] > summary::after {
+  content: "−";
+}
+
+.dt-create-agreement > summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .dt-settings-section > h2 {
+    padding-right: 165px;
+  }
+
+  .dt-create-agreement > summary {
+    min-height: 44px;
+  }
+
+  .dt-nav-site.dt-site-breadcrumb:not(a) {
+    display: none;
+  }
+}
+
+.dt-settings-access-list li:last-child {
+  border-bottom: 0;
+}
+
+.dt-project-block.dt-first-section {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dt-terminal-surface {
+  position: relative;
+  margin-top: 16px;
+}
+
+.dt-terminal-surface .dt-runtime-terminal {
+  margin-top: 0;
+}
+
+#terminal-guidance {
+  position: absolute;
+  z-index: 1;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  padding: 8px;
+  background: #fff;
+  pointer-events: none;
+}
+
+#terminal-status {
+  color: var(--dt-muted);
+  font-size: 13px;
+}
+
+.dt-catalog > .dt-project-block {
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .dt-context-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .dt-catalog .dt-form-actions .dt-inline-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: 8px;
+  }
+}
+
+.dt-nav-current {
+  min-width: 0;
+  color: var(--dt-muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dt-project-navigation + .dt-operation-card {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .hover\:bg-gray-100:hover {

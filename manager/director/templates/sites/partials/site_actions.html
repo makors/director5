@@ -1,0 +1,42 @@
+{% if can_edit %}
+  <section class="dt-settings-section" aria-labelledby="settings-actions-heading">
+    <h2 id="settings-actions-heading">Site actions</h2>
+    <div class="dt-setting-row">
+      <p class="dt-muted">Restart the running service.</p>
+      <form method="post" data-dt-form action="{% url 'sites:restart' site.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="tab" value="{{ dashboard_tab }}">
+        <button class="dt-btn-outline" data-dashboard-focus="restart" type="submit" {% if operation %}disabled{% endif %}>Restart site</button>
+      </form>
+    </div>
+    <div class="dt-setting-row">
+      <p class="dt-muted">Build and deploy the current source files.</p>
+      <form method="post" data-dt-form action="{% url 'sites:rebuild' site.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="tab" value="{{ dashboard_tab }}">
+        <button class="dt-btn-outline" data-dashboard-focus="rebuild" type="submit" {% if operation %}disabled{% endif %}>Rebuild and deploy</button>
+      </form>
+    </div>
+    {% if operation %}
+      <p class="dt-setting-help">{% if operation.status == 'failed' %}Retry the failed operation before starting another.{% else %}Actions are available when the current operation finishes.{% endif %}</p>
+    {% endif %}
+  </section>
+
+  <section class="dt-settings-section dt-project-delete" aria-labelledby="delete-site-heading">
+    <details id="delete-site-disclosure">
+      <summary class="dt-project-delete-summary" data-dashboard-focus="delete-summary"><strong id="delete-site-heading">Delete site</strong></summary>
+      <form method="post" data-dt-form action="{% url 'sites:delete' site.id %}" class="dt-project-delete-form">
+        {% csrf_token %}
+        <input type="hidden" name="tab" value="{{ dashboard_tab }}">
+        <p>Deleting the site can also permanently remove its files and database. This cannot be undone.</p>
+        <div class="dt-form-field">
+          <label for="delete-confirmation">Type <strong>{{ site.name }}</strong> to confirm</label>
+          <input id="delete-confirmation" data-dashboard-focus="delete-confirmation" name="confirmation" type="text" required pattern="{{ site.name }}" autocomplete="off" spellcheck="false" aria-describedby="delete-confirmation-help">
+          <p id="delete-confirmation-help" class="dt-muted">The site name must match exactly.</p>
+        </div>
+        <button type="submit" data-dashboard-focus="delete" class="dt-btn-danger" {% if operation and operation.status != 'failed' %}disabled{% endif %}>Permanently delete site</button>
+        {% if operation and operation.status != 'failed' %}<p class="dt-muted">Wait for the current operation to finish before deleting this site.</p>{% endif %}
+      </form>
+    </details>
+  </section>
+{% endif %}

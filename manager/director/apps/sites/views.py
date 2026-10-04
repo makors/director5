@@ -82,10 +82,9 @@ def site_dashboard(request: AuthenticatedHttpRequest, site_id: int) -> HttpRespo
 
 
 def _dashboard_url(request: AuthenticatedHttpRequest, site: Site) -> str:
-    url = reverse("sites:dashboard", args=[site.id])
     if normalize_dashboard_tab(request.POST.get("tab")) == "settings":
-        return url + "?tab=settings"
-    return url
+        return reverse("sites:settings", args=[site.id])
+    return reverse("sites:dashboard", args=[site.id])
 
 
 def _redirect(request: AuthenticatedHttpRequest, url: str) -> HttpResponse:
