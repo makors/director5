@@ -1466,7 +1466,7 @@ input:where([type='file']):focus {
 .dt-runtime-terminal {
   height: 420px;
   min-height: 360px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--dt-border);
   padding: 12px;
 }
 
@@ -1475,7 +1475,7 @@ input:where([type='file']):focus {
   overflow: auto;
   max-height: 500px;
   font-family: "Geist Mono", monospace;
-  font-size: 13px;
+  font-size: 14px;
   margin: 20px 0;
 }
 
@@ -1493,16 +1493,23 @@ input:where([type='file']):focus {
 
 :root {
   color-scheme: light;
+  /* tjCSL Paper design system; Director retains its requested brand blue. */
   --dt-bg: #fff;
-  --dt-ink: #171717;
-  --dt-muted: #666;
-  --dt-border: #e5e5e5;
+  --dt-wash: #f2f2f2;
+  --dt-ink: #111;
+  --dt-muted: #555;
+  --dt-border: #d9d9d9;
   --dt-brand: #087cfc;
   --dt-brand-strong: #066bd7;
   --dt-brand-tint: #eef6ff;
   --dt-focus: var(--dt-brand);
-  --dt-danger: #b91c1c;
-  --dt-radius: 6px;
+  --dt-danger: #c8102e;
+  --dt-success: #16803c;
+  --dt-warning: #b45309;
+  --dt-radius: 8px;
+  --dt-container-radius: 12px;
+  --dt-page-width: 1120px;
+  --dt-prose-width: 680px;
 }
 
 body {
@@ -1510,8 +1517,8 @@ body {
   background: var(--dt-bg);
   color: var(--dt-ink);
   font-family: "Geist", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.6;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
 }
@@ -1538,8 +1545,8 @@ button {
 
 button:disabled {
   cursor: not-allowed;
-  color: #767676;
-  background: #f5f5f5;
+  color: var(--dt-muted);
+  background: var(--dt-wash);
   border-color: var(--dt-border);
 }
 
@@ -1573,25 +1580,26 @@ main:focus {
 
 .dt-header {
   background: #fff;
-  border-bottom: 1px solid var(--dt-border);
+  padding: 24px 32px 0;
 }
 
 .dt-nav {
   display: flex;
   align-items: center;
   gap: 20px;
-  min-height: 56px;
-  max-width: 1400px;
+  min-height: 64px;
+  max-width: var(--dt-page-width);
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 24px;
 }
 
 .dt-brand {
   display: inline-flex;
   align-items: center;
   min-height: 36px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
+  letter-spacing: -.03em;
 }
 
 .dt-nav-divider {
@@ -1633,7 +1641,7 @@ main:focus {
   display: inline-flex;
   align-items: center;
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-account {
@@ -1652,7 +1660,7 @@ main:focus {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--dt-ink);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -1663,7 +1671,7 @@ main:focus {
 
 .dt-account summary:hover,
 .dt-account[open] > summary {
-  background: #f0f0f0;
+  background: var(--dt-wash);
 }
 
 .dt-account-menu {
@@ -1690,7 +1698,7 @@ main:focus {
   display: block;
   overflow-wrap: anywhere;
   color: var(--dt-ink);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -1700,18 +1708,18 @@ main:focus {
   width: 100%;
   padding: 8px;
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-account-menu a:hover,
 .dt-account-menu button:hover {
-  background: #f5f5f5;
+  background: var(--dt-wash);
 }
 
 .dt-page {
-  max-width: 1088px;
+  max-width: calc(var(--dt-page-width) + 64px);
   margin: 0 auto;
-  padding: 36px 32px 64px;
+  padding: 48px 32px 64px;
 }
 
 .dt-page-heading {
@@ -1726,30 +1734,31 @@ main:focus {
 .dt-project-title-row h1 {
   margin: 0;
   overflow-wrap: anywhere;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: -.3px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -.03em;
 }
 
 .dt-muted {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-btn-primary,
+.dt-btn-secondary,
 .dt-btn-outline,
 .dt-btn-danger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  padding: 7px 12px;
+  min-height: 40px;
+  padding: 10px 18px;
   border: 1px solid transparent;
   border-radius: var(--dt-radius);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 18px;
   white-space: nowrap;
   text-decoration: none;
 }
@@ -1765,18 +1774,27 @@ main:focus {
   border-color: #0559b3;
 }
 
+.dt-btn-secondary {
+  background: var(--dt-ink);
+  color: #fff;
+}
+
+.dt-btn-secondary:hover:not(:disabled) {
+  background: #333;
+}
+
 .dt-btn-outline {
-  border-color: #d4d4d4;
-  background: #fff;
+  border-color: transparent;
+  background: var(--dt-wash);
   color: var(--dt-ink);
 }
 
 .dt-btn-outline:hover:not(:disabled) {
-  background: #f5f5f5;
+  background: var(--dt-border);
 }
 
 .dt-btn-danger {
-  border-color: #efcccc;
+  border-color: var(--dt-border);
   background: #fff;
   color: var(--dt-danger);
 }
@@ -1788,7 +1806,7 @@ main:focus {
 
 .dt-inline-link {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
   text-underline-offset: 3px;
 }
 
@@ -1814,12 +1832,12 @@ main:focus {
 
 .dt-search input,
 .dt-filter-select {
-  height: 36px;
-  border: 1px solid #d4d4d4;
+  height: 44px;
+  border: 1px solid transparent;
   border-radius: var(--dt-radius);
-  background: #fff;
+  background: var(--dt-wash);
   color: var(--dt-ink);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .dt-search input {
@@ -1828,12 +1846,12 @@ main:focus {
 }
 
 .dt-search input::-moz-placeholder {
-  color: #767676;
+  color: var(--dt-muted);
   opacity: 1;
 }
 
 .dt-search input::placeholder {
-  color: #767676;
+  color: var(--dt-muted);
   opacity: 1;
 }
 
@@ -1862,7 +1880,7 @@ main:focus {
 .dt-search-error {
   flex-basis: 100%;
   color: var(--dt-danger);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-site-table {
@@ -1879,7 +1897,7 @@ main:focus {
 
 .dt-site-table-heading {
   padding: 10px 0;
-  background: #fafafa;
+  background: var(--dt-wash);
   border-bottom: 1px solid var(--dt-border);
   color: var(--dt-muted);
   font-size: 12px;
@@ -1899,7 +1917,7 @@ main:focus {
 }
 
 .dt-site-row:hover {
-  background: #fafafa;
+  background: var(--dt-wash);
 }
 
 .dt-site-row:hover h2,
@@ -1927,14 +1945,14 @@ main:focus {
   margin-top: 4px;
   color: var(--dt-muted);
   font-family: "Geist Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
   overflow-wrap: anywhere;
 }
 
 .dt-site-type,
 .dt-site-purpose {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-site-mobile-type {
@@ -1974,11 +1992,11 @@ main:focus {
 .dt-empty-state p {
   margin: 8px 0 20px;
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-form-page {
-  max-width: 576px;
+  max-width: calc(var(--dt-prose-width) + 64px);
   padding-top: 40px;
 }
 
@@ -1995,7 +2013,7 @@ main:focus {
 .dt-form-field legend {
   display: block;
   margin-bottom: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   overflow-wrap: anywhere;
 }
@@ -2010,12 +2028,12 @@ main:focus {
 .dt-form-field select {
   display: block;
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #d4d4d4;
+  padding: 11px 14px;
+  border: 1px solid transparent;
   border-radius: var(--dt-radius);
-  background: #fff;
+  background: var(--dt-wash);
   color: var(--dt-ink);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 20px;
 }
 
@@ -2036,9 +2054,10 @@ main:focus {
 .dt-form-field select:focus,
 .dt-search input:focus,
 .dt-filter-select:focus {
-  border-color: #a3a3a3;
-  outline: 2px solid #087cfc26;
-  outline-offset: 1px;
+  background: #fff;
+  border-color: var(--dt-brand);
+  box-shadow: inset 0 0 0 1px var(--dt-brand);
+  outline: none;
 }
 
 .dt-form-field input:not([type="radio"]):focus-visible,
@@ -2046,14 +2065,15 @@ main:focus {
 .dt-form-field select:focus-visible,
 .dt-search input:focus-visible,
 .dt-filter-select:focus-visible {
-  outline: 2px solid var(--dt-focus);
-  outline-offset: 3px;
+  outline: none;
 }
 
 .dt-form-field input[aria-invalid="true"],
 .dt-form-field textarea[aria-invalid="true"],
 .dt-form-field select[aria-invalid="true"] {
-  border-color: #d37575;
+  border-color: var(--dt-danger);
+  box-shadow: inset 0 0 0 1px var(--dt-danger);
+  background: #fff;
 }
 
 .dt-form-field .dt-muted[id] {
@@ -2072,7 +2092,7 @@ main:focus {
   gap: 8px;
   min-height: 36px;
   padding: 4px 0;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
 }
 
@@ -2112,10 +2132,10 @@ main:focus {
 
 .dt-auth-card h1 {
   margin-bottom: 12px;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: -.3px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -.03em;
 }
 
 .dt-auth-card > .dt-muted {
@@ -2174,7 +2194,7 @@ main:focus {
 }
 
 .dt-messages {
-  max-width: 1088px;
+  max-width: calc(var(--dt-page-width) + 64px);
   margin: 20px auto -12px;
   padding: 0 32px;
 }
@@ -2182,8 +2202,8 @@ main:focus {
 .dt-message {
   padding: 8px 12px;
   border-left: 2px solid var(--dt-border);
-  color: #444;
-  font-size: 13px;
+  color: var(--dt-muted);
+  font-size: 14px;
 }
 
 .dt-message + .dt-message {
@@ -2196,8 +2216,8 @@ main:focus {
 }
 
 .dt-message-success {
-  border-color: #176534;
-  color: #176534;
+  border-color: var(--dt-success);
+  color: var(--dt-success);
 }
 
 .dt-project-header {
@@ -2256,7 +2276,7 @@ main:focus {
   margin-bottom: -1px;
   border-bottom: 2px solid transparent;
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-project-tab[aria-current="page"] {
@@ -2302,11 +2322,11 @@ main:focus {
 
 .dt-project-meta dt {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-project-meta dd {
-  font-size: 13px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
@@ -2323,7 +2343,7 @@ main:focus {
 
 .dt-project-members li {
   margin-top: 6px;
-  font-size: 13px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
@@ -2347,12 +2367,12 @@ main:focus {
 .dt-setting-help {
   margin-top: 12px;
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-project-notice {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-project-delete-summary {
@@ -2380,7 +2400,7 @@ main:focus {
 
 .dt-project-delete-form > p {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-project-delete-form input {
@@ -2411,7 +2431,7 @@ main:focus {
 .dt-operation-meta {
   color: var(--dt-muted);
   font-family: "Geist Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .dt-progress-label {
@@ -2468,14 +2488,14 @@ main:focus {
 }
 
 .dt-step-heading h3 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
 }
 
 .dt-action-message {
   margin-top: 8px;
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 
@@ -2484,7 +2504,7 @@ main:focus {
 }
 
 .dt-action-log summary {
-  color: #444;
+  color: var(--dt-muted);
   font-size: 12px;
   cursor: pointer;
 }
@@ -2494,7 +2514,7 @@ main:focus {
   padding: 12px;
   border-left: 1px solid var(--dt-border);
   font-family: "Geist Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -2561,10 +2581,11 @@ main:focus {
 
   .dt-page-heading h1,
 	.dt-project-title-row h1 {
-    font-size: 22px;
+    font-size: 28px;
   }
 
   .dt-btn-primary,
+	.dt-btn-secondary,
 	.dt-btn-outline,
 	.dt-btn-danger {
     min-height: 44px;
@@ -2605,7 +2626,7 @@ main:focus {
   }
 
   .dt-site-name p {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .dt-site-mobile-type {
@@ -2667,7 +2688,7 @@ main:focus {
     display: flex;
     align-items: center;
     min-height: 44px;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .dt-project-meta > div {
@@ -2725,7 +2746,7 @@ main:focus {
 
 .dt-page-title {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 16px;
 }
 
@@ -2738,7 +2759,7 @@ main:focus {
 .dt-project-block > h2,
 .dt-project-block > .dt-section-heading h2 {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 16px;
 }
 
@@ -2787,7 +2808,7 @@ main:focus {
 }
 
 .dt-project-delete {
-  border-color: #efcccc;
+  border-color: var(--dt-border);
 }
 
 .dt-project-activity > .dt-muted {
@@ -2802,7 +2823,7 @@ main:focus {
 }
 
 .dt-project-note h3 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   margin-bottom: 4px;
 }
@@ -2819,21 +2840,20 @@ main:focus {
 }
 
 .dt-site-table {
-  border: 1px solid var(--dt-border);
-  border-radius: 8px;
-  overflow: hidden;
+  border: 0;
+  border-radius: 0;
 }
 
 .dt-site-table-heading {
-  padding: 10px 16px;
+  padding: 12px 0;
 }
 
 .dt-site-row {
-  padding: 14px 16px;
+  padding: 16px 0;
 }
 
 .dt-site-list li:last-child {
-  border-bottom: 0;
+  border-bottom: 1px solid var(--dt-border);
 }
 
 .dt-site-name p {
@@ -2843,8 +2863,8 @@ main:focus {
 .dt-status::before,
 .dt-project-status::before {
   content: "";
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #a3a3a3;
   flex-shrink: 0;
@@ -2852,7 +2872,7 @@ main:focus {
 
 .dt-status-success::before,
 .dt-project-status[data-status="ready"]::before {
-  background: #16a34a;
+  background: var(--dt-success);
 }
 
 .dt-status-danger::before,
@@ -2933,7 +2953,7 @@ main:focus {
 .dt-operation-card h2 a {
   color: var(--dt-ink);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .dt-operation-card > p {
@@ -2957,7 +2977,7 @@ main:focus {
   font-weight: 500;
   padding: 3px 8px;
   border-radius: 5px;
-  background: #f5f5f5;
+  background: var(--dt-wash);
 }
 
 .dt-state-label[data-pending="true"] {
@@ -2966,7 +2986,7 @@ main:focus {
 }
 
 .dt-comment-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--dt-muted);
 }
@@ -3026,6 +3046,7 @@ main:focus {
   }
 
   .dt-btn-primary,
+	.dt-btn-secondary,
 	.dt-btn-outline,
 	.dt-btn-danger,
 	.dt-filter-select,
@@ -3046,7 +3067,7 @@ main:focus {
 
 .dt-page-heading h2 {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .dt-terminal-ssh-link {
@@ -3055,7 +3076,7 @@ main:focus {
 
 .dt-form-field input.dt-code-input {
   font-family: "Geist Mono", monospace;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-settings-access-list li {
@@ -3101,7 +3122,7 @@ main:focus {
 .dt-summary-meta dt,
 .dt-summary-description h2 {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   margin-bottom: 6px;
 }
@@ -3130,13 +3151,13 @@ main:focus {
 .dt-project-note {
   margin: 0;
   padding: 16px;
-  background: #fafafa;
+  background: var(--dt-wash);
   border-left: 2px solid var(--dt-border);
   border-radius: 0;
 }
 
 .dt-project-note h2 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   margin-bottom: 6px;
 }
@@ -3146,6 +3167,7 @@ main:focus {
 }
 
 .dt-settings-section {
+  min-width: 0;
   position: relative;
   padding: 20px 0;
   border-bottom: 1px solid var(--dt-border);
@@ -3157,7 +3179,7 @@ main:focus {
 
 .dt-settings-section > h2 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 8px;
 }
 
@@ -3181,7 +3203,7 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   list-style: none;
 }
@@ -3209,12 +3231,12 @@ main:focus {
 
 .dt-settings-edit .dt-btn-primary {
   background: #fff;
-  border-color: #d4d4d4;
+  border-color: var(--dt-border);
   color: var(--dt-ink);
 }
 
 .dt-settings-edit .dt-btn-primary:hover:not(:disabled) {
-  background: #fafafa;
+  background: var(--dt-wash);
   border-color: #a3a3a3;
 }
 
@@ -3237,7 +3259,7 @@ main:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   padding: 8px;
   min-height: 36px;
@@ -3272,7 +3294,7 @@ main:focus {
     display: inline;
     min-width: 0;
     max-width: 28vw;
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .dt-nav-end {
@@ -3300,7 +3322,7 @@ main:focus {
   }
 
   .dt-project-actions .dt-btn-outline {
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 12px;
   }
 
@@ -3382,10 +3404,11 @@ main:focus {
 }
 
 .dt-settings-section {
+  min-width: 0;
   position: relative;
 }
 
-.dt-settings-section > h2 {
+.dt-settings-section:has(> .dt-settings-edit) > h2 {
   padding-right: 160px;
 }
 
@@ -3420,7 +3443,7 @@ main:focus {
   display: flex;
   align-items: center;
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
 }
 
@@ -3438,8 +3461,8 @@ main:focus {
 }
 
 @media (max-width: 640px) {
-  .dt-settings-section > h2 {
-    padding-right: 165px;
+  .dt-settings-section:has(> .dt-settings-edit) > h2 {
+    padding-right: 140px;
   }
 
   .dt-create-agreement > summary {
@@ -3482,7 +3505,7 @@ main:focus {
 
 #terminal-status {
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .dt-catalog > .dt-project-block {
@@ -3512,7 +3535,7 @@ main:focus {
 .dt-nav-current {
   min-width: 0;
   color: var(--dt-muted);
-  font-size: 13px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3522,6 +3545,152 @@ main:focus {
   border-top: 0;
   margin-top: 0;
   padding-top: 0;
+}
+
+/* Paper component roles and responsive adaptations. */
+
+.dt-sites-page > .dt-page-heading h1 {
+  font-size: 44px;
+  line-height: 48px;
+}
+
+.dt-site-name h2 {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 500;
+}
+
+.dt-site-name p,
+.dt-project-domain {
+  font-size: 14px;
+  line-height: 19px;
+}
+
+.dt-site-table-heading {
+  background: transparent;
+  font-size: 14px;
+}
+
+.dt-status,
+.dt-project-status {
+  font-size: 14px;
+  color: var(--dt-ink);
+  gap: 8px;
+}
+
+.dt-project-block > h2,
+.dt-project-block > .dt-section-heading h2,
+.dt-settings-section > h2,
+.dt-page-title {
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.dt-form-field .dt-muted,
+.dt-error-list,
+.dt-field-error {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.dt-settings-section {
+  padding: 24px 0;
+}
+
+.dt-account-menu {
+  border-radius: var(--dt-container-radius);
+}
+
+.dt-state-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.dt-state-label::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--dt-muted);
+}
+
+.dt-state-label[data-pending="true"] {
+  color: var(--dt-ink);
+  background: transparent;
+}
+
+.dt-state-label[data-pending="true"]::before {
+  background: var(--dt-warning);
+}
+
+.dt-project-note {
+  background: var(--dt-wash);
+}
+
+@media (max-width: 640px) {
+  .dt-header {
+    padding: 12px 16px 0;
+  }
+
+  .dt-nav {
+    padding: 8px 12px;
+    gap: 12px;
+    min-height: 64px;
+  }
+
+  .dt-brand {
+    font-size: 18px;
+  }
+
+  .dt-sites-page > .dt-page-heading h1 {
+    font-size: 28px;
+    line-height: 32px;
+  }
+
+  .dt-site-row {
+    padding: 16px 0;
+  }
+
+  .dt-site-name p,
+	.dt-project-domain {
+    font-size: 14px;
+  }
+
+  .dt-form-field input:not([type="radio"]):not([type="checkbox"]),
+	.dt-form-field select,
+	.dt-form-field textarea {
+    font-size: 16px;
+  }
+}
+
+strong,
+b {
+  font-weight: 600;
+}
+
+.dt-site-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dt-page-heading h2 {
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 600;
+}
+
+.dt-runtime-terminal {
+  border-radius: var(--dt-container-radius);
 }
 
 .hover\:bg-gray-100:hover {

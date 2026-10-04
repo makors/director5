@@ -3,7 +3,7 @@
 {% block title %}Sites · Director{% endblock %}
 
 {% block main %}
-  <div class="dt-page">
+  <div class="dt-page dt-sites-page">
     {% include "sites/governance/notices.html" %}
     <div class="dt-page-heading">
       <h1>Sites</h1>
@@ -55,10 +55,10 @@
                   </div>
                   <span class="dt-site-type">{{ site.get_mode_display }}</span>
                   <span class="dt-site-purpose">{{ site.get_purpose_display }}</span>
+                  <span class="dt-site-state"><span class="dt-site-mobile-type">{{ site.get_mode_display }} ·</span>
                   <span class="dt-status {% if site.status == 'ready' %}dt-status-success{% elif site.status == 'failed' or site.status == 'disabled' %}dt-status-danger{% elif site.status == 'queued' or site.status == 'running' %}dt-status-warning{% endif %}">
-                    <span class="dt-site-mobile-type">{{ site.get_mode_display }} ·</span>
                     {{ site.status_label }}
-                  </span>
+                  </span></span>
                 </a>
               </li>
             {% endfor %}

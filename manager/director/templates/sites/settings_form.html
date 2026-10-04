@@ -43,7 +43,7 @@
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
   {% if section != 'name' or site.purpose != 'user' %}
     <div class="dt-form-actions">
-      <button type="submit" class="dt-btn-primary" data-submitting-text="Saving…"
+      <button type="submit" class="dt-btn-secondary" data-submitting-text="Saving…"
               {% if not can_change_routing and section == 'name' or not can_change_routing and section == 'domain' or not can_change_type and section == 'type' %}disabled{% endif %}>{{ submit_label }}</button>
     </div>
   {% endif %}

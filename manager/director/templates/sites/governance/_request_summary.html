@@ -1,4 +1,4 @@
-<div class="dt-section-heading"><h2 id="request-{{ entry.request.id }}">{{ entry.request.activity }}</h2><span class="dt-state-label" data-pending="{{ entry.form|yesno:'true,false' }}">{{ entry.admin_status }}</span></div>
+<div class="dt-section-heading"><h2 id="request-{{ entry.request.id }}">{{ entry.request.activity }}</h2><span class="dt-state-label" data-pending="{{ entry.form|yesno:'true,false' }}">{% if entry.admin_status == "Pending" %}{% if entry.teacher_status == "Pending" %}Awaiting teacher{% elif entry.teacher_status == "Rejected" %}Teacher rejected{% else %}Awaiting administrator{% endif %}{% else %}{{ entry.admin_status }}{% endif %}</span></div>
 <p class="dt-muted mt-2">Requested by {{ entry.request.user.full_name|default:entry.request.user.username }} · <time datetime="{{ entry.request.request_date|date:'c' }}">{{ entry.request.request_date|date:"M j, Y" }}</time></p>
 <dl class="dt-project-meta mt-4">
   <div><dt>Teacher</dt><dd>{{ entry.request.teacher.full_name|default:entry.request.teacher.username }}</dd></div>

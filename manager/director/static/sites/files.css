@@ -1,21 +1,22 @@
 .dt-file-help {
 	margin: 0 0 16px;
-	color: #737373;
-	font-size: 13px;
+	color: var(--dt-muted);
+	font-size: 14px;
+	line-height: 20px;
 }
 .dt-files-layout {
 	display: grid;
 	grid-template-columns: minmax(240px, 30%) minmax(0, 1fr);
-	border: 1px solid #e5e5e5;
-	border-radius: 8px;
-	background: #fff;
+	border: 1px solid var(--dt-border);
+	border-radius: var(--dt-container-radius);
+	background: var(--dt-bg);
 }
 .dt-file-panel {
 	min-width: 0;
 	scroll-margin-top: 12px;
 }
 #file-list-panel {
-	border-right: 1px solid #e5e5e5;
+	border-right: 1px solid var(--dt-border);
 }
 .dt-file-toolbar,
 .dt-file-workspace-heading {
@@ -24,7 +25,7 @@
 	gap: 8px;
 	min-height: 54px;
 	padding: 8px 12px;
-	border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid var(--dt-border);
 }
 .dt-file-toolbar {
 	justify-content: space-between;
@@ -35,14 +36,16 @@
 	align-items: center;
 	gap: 6px;
 	min-width: 0;
-	font-size: 13px;
+	font-size: 14px;
+	line-height: 20px;
 }
 .dt-file-toolbar nav button,
 .dt-file-name {
+	min-height: 40px;
 	background: none;
 	border: 0;
 	padding: 0;
-	color: #171717;
+	color: var(--dt-ink);
 	font: inherit;
 	text-align: left;
 	cursor: pointer;
@@ -56,37 +59,39 @@
 .dt-file-table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 12px;
+	font-size: 14px;
+	line-height: 18px;
 }
 .dt-file-table th {
 	padding: 10px 12px;
-	color: #737373;
-	font-weight: 400;
+	color: var(--dt-muted);
+	font-weight: 500;
 	text-align: left;
 }
 .dt-file-table td {
 	padding: 5px 12px;
-	border-top: 1px solid #f5f5f5;
+	border-top: 1px solid var(--dt-border);
 }
 .dt-file-table td:nth-child(2) {
-	color: #737373;
+	font-family: "Geist Mono", ui-monospace, monospace;
+	color: var(--dt-muted);
 	white-space: nowrap;
 }
 .dt-file-table td:last-child {
-	width: 32px;
+	width: 40px;
 	padding-left: 0;
 }
 .dt-file-name {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	min-height: 32px;
+	min-height: 40px;
 }
 .dt-file-selected {
-	background: #eef6ff;
+	background: var(--dt-brand-tint);
 }
 .dt-file-selected td:first-child {
-	box-shadow: inset 3px 0 #087cfc;
+	box-shadow: inset 3px 0 var(--dt-brand);
 }
 .dt-file-menu,
 .dt-file-tools,
@@ -99,20 +104,22 @@
 .dt-file-text-button {
 	display: flex;
 	align-items: center;
-	min-height: 32px;
+	min-height: 40px;
 	padding: 6px 8px;
 	border: 0;
-	border-radius: 4px;
+	border-radius: var(--dt-radius);
 	background: none;
-	color: #525252;
-	font-size: 12px;
+	color: var(--dt-muted);
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 18px;
 	cursor: pointer;
 	white-space: nowrap;
 	list-style: none;
 }
 .dt-file-menu summary {
 	justify-content: center;
-	width: 32px;
+	width: 40px;
 }
 .dt-file-menu summary::-webkit-details-marker,
 .dt-file-tools summary::-webkit-details-marker,
@@ -139,9 +146,9 @@
 	right: 0;
 	width: 180px;
 	padding: 5px;
-	border: 1px solid #e5e5e5;
-	border-radius: 6px;
-	background: #fff;
+	border: 1px solid var(--dt-border);
+	border-radius: var(--dt-container-radius);
+	background: var(--dt-bg);
 	box-shadow: 0 6px 18px #0000000d;
 }
 .dt-file-menu button,
@@ -150,16 +157,18 @@
 .dt-file-tools a {
 	display: block;
 	width: 100%;
-	min-height: 36px;
+	min-height: 40px;
 	padding: 8px;
 	border: 0;
 	background: none;
-	color: #262626;
+	color: var(--dt-ink);
 	font: inherit;
-	font-size: 13px;
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 20px;
 	text-align: left;
 	cursor: pointer;
-	border-radius: 3px;
+	border-radius: var(--dt-radius);
 }
 .dt-file-options > div {
 	bottom: calc(100% + 4px);
@@ -174,18 +183,21 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	font-size: 13px;
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 500;
 }
 .dt-file-options select,
 .dt-file-dialog select {
 	min-width: 0;
-	min-height: 36px;
-	border: 1px solid #e5e5e5;
-	border-radius: 5px;
+	min-height: 40px;
+	border: 1px solid var(--dt-border);
+	border-radius: var(--dt-radius);
 	padding: 6px;
-	color: #525252;
-	background: #fff;
-	font-size: 13px;
+	color: var(--dt-muted);
+	background: var(--dt-bg);
+	font-size: 14px;
+	line-height: 20px;
 }
 #file-tabs {
 	display: flex;
@@ -202,24 +214,25 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	min-height: 36px;
+	min-height: 40px;
 	padding: 8px 12px;
 	border: 0;
 	background: none;
-	color: #525252;
-	font-size: 12px;
+	color: var(--dt-muted);
+	font-size: 14px;
+	line-height: 18px;
 	cursor: pointer;
 }
 .dt-file-tab [aria-selected="true"] {
-	color: #171717;
-	box-shadow: inset 0 -2px #087cfc;
+	color: var(--dt-ink);
+	box-shadow: inset 0 -2px var(--dt-brand);
 }
 .dt-file-workspace-heading {
 	position: sticky;
 	top: 0;
 	z-index: 3;
-	background: #fff;
-	border-radius: 0 8px 0 0;
+	background: var(--dt-bg);
+	border-radius: 0 var(--dt-container-radius) 0 0;
 }
 #file-save {
 	margin-left: auto;
@@ -235,15 +248,17 @@
 .dt-file-editor-heading h2 {
 	margin: 0;
 	overflow-wrap: anywhere;
-	font-family: monospace;
-	font-size: 12px;
+	font-family: "Geist Mono", ui-monospace, monospace;
+	font-size: 14px;
+	line-height: 18px;
 	font-weight: 400;
-	color: #737373;
+	color: var(--dt-muted);
 }
 .dt-file-editor-heading span {
 	white-space: nowrap;
-	color: #737373;
-	font-size: 11px;
+	color: var(--dt-muted);
+	font-size: 14px;
+	line-height: 18px;
 }
 #file-code-editor,
 #file-content {
@@ -256,23 +271,23 @@
 	resize: vertical;
 	padding: 16px;
 	border: 0;
-	background: #fff;
-	color: #171717;
+	background: var(--dt-bg);
+	color: var(--dt-ink);
 	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 	font-size: 13px;
 	tab-size: 4;
 }
 #file-content:focus {
-	outline: 2px solid #087cfc;
+	outline: 2px solid var(--dt-brand);
 	outline-offset: -2px;
 }
 #file-code-editor .ace_comment,
 #file-code-editor .ace_operator {
-	color: #4b5563;
+	color: var(--dt-muted);
 }
 .dt-file-editor-footer {
 	padding: 4px 8px;
-	border-top: 1px solid #e5e5e5;
+	border-top: 1px solid var(--dt-border);
 }
 .dt-file-empty {
 	min-height: clamp(320px, 55dvh, 660px);
@@ -289,17 +304,18 @@
 	margin: 0 0 8px;
 }
 .dt-file-empty p {
-	color: #737373;
-	font-size: 13px;
+	color: var(--dt-muted);
+	font-size: 14px;
+	line-height: 20px;
 	max-width: 260px;
-	line-height: 1.6;
 }
 .dt-file-message {
 	margin: 0 0 12px;
-	font-size: 13px;
+	font-size: 14px;
+	line-height: 20px;
 }
 .dt-file-message[data-error="true"] {
-	color: #b91c1c;
+	color: var(--dt-danger);
 }
 .dt-file-back {
 	display: none;
@@ -310,8 +326,8 @@
 }
 .dt-file-dialog {
 	width: min(440px, calc(100vw - 32px));
-	border: 1px solid #e5e5e5;
-	border-radius: 8px;
+	border: 1px solid var(--dt-border);
+	border-radius: var(--dt-container-radius);
 	padding: 24px;
 }
 .dt-file-dialog::backdrop {
@@ -323,15 +339,17 @@
 	margin: 0 0 12px;
 }
 .dt-file-dialog p {
-	color: #737373;
-	font-size: 13px;
-	line-height: 1.6;
+	color: var(--dt-muted);
+	font-size: 14px;
+	line-height: 20px;
 	overflow-wrap: anywhere;
 }
 .dt-file-dialog label {
 	display: block;
-	font-size: 13px;
+	font-size: 14px;
+	line-height: 20px;
 	margin: 18px 0 8px;
+	font-weight: 500;
 }
 .dt-file-dialog input {
 	width: 100%;
@@ -365,7 +383,7 @@
 	.dt-file-menu a:hover,
 	.dt-file-tools button:hover,
 	.dt-file-tools a:hover {
-		background: #f5f5f5;
+		background: var(--dt-wash);
 	}
 }
 @media (max-width: 850px) {
@@ -390,7 +408,7 @@
 	.dt-file-workspace-heading {
 		padding: 4px 8px;
 		gap: 4px;
-		border-radius: 8px 8px 0 0;
+		border-radius: var(--dt-container-radius) var(--dt-container-radius) 0 0;
 	}
 	.dt-file-tab button {
 		max-width: 140px;
