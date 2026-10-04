@@ -62,6 +62,7 @@
 	overflow-y: auto;
 }
 .dt-user-picker-list [role="option"] {
+	position: relative;
 	display: flex;
 	align-items: center;
 	min-height: 36px;
@@ -73,7 +74,15 @@
 }
 .dt-user-picker-list [aria-selected="true"] {
 	background: #eef6ff;
-	box-shadow: inset 2px 0 #087cfc;
+}
+.dt-user-picker-list [aria-selected="true"]::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 2px;
+	background: #087cfc;
 }
 .dt-user-picker-status {
 	margin: 0;
