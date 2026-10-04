@@ -1,6 +1,13 @@
 {% extends "base_with_nav.html" %}
+{% load static %}
 
 {% block title %}Create site · Director{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'sites/user-picker.css' %}">
+  <script defer src="{% static 'sites/user-picker.js' %}"></script>
+{% endblock %}
 
 {% block main %}
   <div class="dt-page dt-form-page">

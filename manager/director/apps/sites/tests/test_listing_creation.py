@@ -33,6 +33,19 @@ def test_creation_optional_fields_start_collapsed_and_agreement_stays_visible(cl
     assert html.index("</details>") < html.index('name="student_agreement"')
 
 
+def test_people_picker_labels_and_selected_values_survive_validation(client, student, teacher):
+    client.force_login(student)
+    response = client.post(
+        reverse("sites:create"),
+        create_data(name="UPPERCASE", users=[teacher.pk]),
+        headers={"HX-Request": "true"},
+    )
+    html = response.content.decode()
+    assert f'value="{teacher.pk}" selected>Leigh Bardugo (teacher)</option>' in html
+    assert "data-user-picker" in html
+    assert not Site.objects.exists()
+
+
 @pytest.mark.parametrize("htmx", (False, True))
 @pytest.mark.parametrize("optional", ({"users": ["unknown"]}, {"description": "Keep this text"}))
 def test_creation_reveals_optional_values_and_errors(client, student, htmx, optional):

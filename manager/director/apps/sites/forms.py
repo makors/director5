@@ -23,6 +23,12 @@ class DirectorSelect(forms.Select):
         )
 
 
+class PeopleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        name = obj.full_name.strip()
+        return f"{name} ({obj.username})" if name else obj.username
+
+
 class CreateSiteForm(forms.ModelForm):
     """The :class:`forms.ModelForm` for creating a website (static/dynamic).
 
@@ -94,10 +100,13 @@ class CreateSiteForm(forms.ModelForm):
     class Meta:
         model = Site
         fields = ["name", "description", "mode", "purpose", "users"]
+        field_classes = {"users": PeopleChoiceField}
         widgets = {
             "name": forms.TextInput(attrs={"class": "dt-input block"}),
             "description": forms.Textarea(attrs={"class": "dt-input block", "rows": 3}),
             "purpose": forms.Select(attrs={"class": "dt-input block"}),
             "mode": forms.RadioSelect(),
-            "users": forms.SelectMultiple(attrs={"class": "dt-input block", "size": 3}),
+            "users": forms.SelectMultiple(
+                attrs={"class": "dt-input block", "size": 3, "data-user-picker": ""}
+            ),
         }
