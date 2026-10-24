@@ -48,3 +48,18 @@ RUNTIME_WORKSPACE_IMAGE = os.environ.get("RUNTIME_WORKSPACE_IMAGE", "alpine:3.21
 RUNTIME_POSTGRES_IMAGE = os.environ.get("RUNTIME_POSTGRES_IMAGE", "postgres:17-alpine")
 RUNTIME_MYSQL_IMAGE = os.environ.get("RUNTIME_MYSQL_IMAGE", "mysql:8.4")
 RUNTIME_HELPER_NETWORK = os.environ.get("RUNTIME_HELPER_NETWORK", "bridge")
+
+# Site runtime. "swarm" runs sites as Docker Swarm services; "kubernetes" runs them
+# as pods (in Kata VMs when KUBERNETES_RUNTIME_CLASS names a Kata runtime class).
+SITE_RUNTIME = os.environ.get("DIRECTOR_SITE_RUNTIME", "swarm")
+if SITE_RUNTIME not in {"swarm", "kubernetes"}:
+    raise RuntimeError(f"Unknown DIRECTOR_SITE_RUNTIME {SITE_RUNTIME!r}")
+KUBERNETES_NAMESPACE = os.environ.get("KUBERNETES_NAMESPACE", "director-sites")
+KUBERNETES_RUNTIME_CLASS = os.environ.get("KUBERNETES_RUNTIME_CLASS", "kata")
+# Built site images are pushed here so the cluster's container runtime can pull them.
+KUBERNETES_IMAGE_REGISTRY = os.environ.get("KUBERNETES_IMAGE_REGISTRY", "127.0.0.1:5000")
+KUBERNETES_TRAEFIK_ENTRYPOINTS = os.environ.get("KUBERNETES_TRAEFIK_ENTRYPOINTS", "websecure")
+# Cluster DNS, used by custom Nginx gateways to resolve the site's service.
+KUBERNETES_DNS_RESOLVER = os.environ.get("KUBERNETES_DNS_RESOLVER", "10.43.0.10")
+KUBERNETES_POD_START_TIMEOUT = int(os.environ.get("KUBERNETES_POD_START_TIMEOUT", "90"))
+STATIC_SITE_IMAGE = os.environ.get("STATIC_SITE_IMAGE", "nginx:latest")

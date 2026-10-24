@@ -93,6 +93,15 @@ def atomic_write(path, text):
     temporary.replace(path)
 
 
+def compose_files(root):
+    """Base stack, the opt-in Kubernetes overlay, then the pinned application image."""
+    files = ['-f', str(root / 'compose.yaml')]
+    for name in ('compose.kubernetes.yaml', 'state/application-image.yaml'):
+        if (root / name).exists():
+            files += ['-f', str(root / name)]
+    return files
+
+
 def update(sha):
     validate_sha(sha)
     if os.geteuid() != 0 or not (ROOT / 'state/installation.json').is_file():
@@ -106,9 +115,7 @@ def update(sha):
     log = (release / 'update.log').open('ab', buffering=0)
     override = state / 'application-image.yaml'
     common = ['docker', 'compose', '--project-directory', str(ROOT), '--env-file', str(ROOT / '.env'),
-              '-f', str(ROOT / 'compose.yaml')]
-    if override.exists():
-        common += ['-f', str(override)]
+              *compose_files(ROOT)]
 
     def run(args, *, capture=False, output=None, input_file=None, timeout=600):
         return subprocess.run(args, cwd=ROOT, check=True, timeout=timeout,

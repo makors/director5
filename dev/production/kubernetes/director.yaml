@@ -1,0 +1,115 @@
+# Namespace and least-privilege access for Director's hosted sites on Kubernetes.
+# Applied by install.sh. Sites run in director-sites; the Orchestrator may only manage
+# objects there, and Traefik may only read routes, services and endpoints.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: director-sites
+  labels:
+    app.kubernetes.io/managed-by: director
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: director-orchestrator
+  namespace: director-sites
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: director-orchestrator
+  namespace: director-sites
+rules:
+  - apiGroups: ["apps"]
+    resources: [deployments]
+    verbs: [get, list, watch, create, update, delete]
+  - apiGroups: [""]
+    resources: [services, pods]
+    verbs: [get, list, watch, create, update, delete]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
+  - apiGroups: [""]
+    resources: [pods/attach]
+    verbs: [get, create]
+  - apiGroups: [traefik.io]
+    resources: [ingressroutes, middlewares]
+    verbs: [get, list, watch, create, update, delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: director-orchestrator
+  namespace: director-sites
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: director-orchestrator
+subjects:
+  - kind: ServiceAccount
+    name: director-orchestrator
+    namespace: director-sites
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: director-orchestrator-token
+  namespace: director-sites
+  annotations:
+    kubernetes.io/service-account.name: director-orchestrator
+type: kubernetes.io/service-account-token
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: director-traefik
+  namespace: director-sites
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: director-traefik
+  namespace: director-sites
+rules:
+  - apiGroups: [""]
+    resources: [services, secrets, endpoints]
+    verbs: [get, list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  - apiGroups: [traefik.io]
+    resources:
+      - ingressroutes
+      - ingressroutetcps
+      - ingressrouteudps
+      - middlewares
+      - middlewaretcps
+      - serverstransports
+      - serverstransporttcps
+      - tlsoptions
+      - tlsstores
+      - traefikservices
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: director-traefik
+  namespace: director-sites
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: director-traefik
+subjects:
+  - kind: ServiceAccount
+    name: director-traefik
+    namespace: director-sites
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: director-traefik-token
+  namespace: director-sites
+  annotations:
+    kubernetes.io/service-account.name: director-traefik
+type: kubernetes.io/service-account-token

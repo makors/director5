@@ -12,6 +12,7 @@ dependencies = [
   "PyMySQL",
   "requests",
   "typing-extensions",
+  "kubernetes>=36.0.3",
 ]
 
 [dependency-groups]

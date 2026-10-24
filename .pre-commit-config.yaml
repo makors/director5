@@ -11,6 +11,8 @@ repos:
       - id: mixed-line-ending
       - id: check-toml
       - id: check-yaml
+        # Kubernetes manifests keep related objects in one multi-document file.
+        args: [--allow-multiple-documents]
       - id: detect-private-key
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.2

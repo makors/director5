@@ -8,8 +8,12 @@ from typing import Any
 import docker
 import docker.errors
 from fastapi import APIRouter, HTTPException
+from kubernetes.client.exceptions import ApiException
+from kubernetes.config import ConfigException
 
+from orchestrator import settings
 from orchestrator.api.files.storage import FileOperationError, SiteFiles, file_error
+from orchestrator.api.kubernetes import sites as kubernetes_sites
 
 from . import gateway, services
 from .build_context import build_context
@@ -66,6 +70,8 @@ def build_image(
                     container_limits=resource_limits,  # type: ignore[assignment]
                     tag=str(site),
                 )
+                if settings.SITE_RUNTIME == "kubernetes":
+                    kubernetes_sites.push_image(client, site)
     except (FileOperationError, OSError) as exc:
         error = file_error(exc) if isinstance(exc, OSError) else exc
         raise HTTPException(
@@ -103,6 +109,41 @@ def delete_image(site: SiteInfo):
     client = docker.from_env()
     with contextlib.suppress(docker.errors.NotFound):
         client.images.remove(str(site))
+    if settings.SITE_RUNTIME == "kubernetes":
+        kubernetes_sites.remove_image(client, site)
+    return {}
+
+
+def _update_kubernetes_site(site_info: SiteInfo) -> dict[str, Any]:
+    client = docker.from_env()
+    try:
+        kubernetes_sites.deploy_site(client, site_info)
+    except kubernetes_sites.ImageUnavailable as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "user_error": True,
+                "description": "No site image",
+                "explanation": str(exc),
+            },
+        ) from exc
+    except docker.errors.DockerException as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "user_error": True,
+                "description": "Invalid Nginx configuration",
+                "explanation": "The configuration could not be applied. Check its syntax and retry.",
+            },
+        ) from exc
+    except (ApiException, ConfigException) as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "description": "Failed to update service",
+                "traceback": traceback.format_exc(),
+            },
+        ) from e
     return {}
 
 
@@ -112,6 +153,8 @@ def update_docker_service(site_info: SiteInfo):
 
     Note that this expects that a docker image exists with the correct tag.
     """
+    if settings.SITE_RUNTIME == "kubernetes":
+        return _update_kubernetes_site(site_info)
     params = services.create_service_params(site_info)
     client = docker.from_env()
     try:
@@ -159,6 +202,9 @@ def update_docker_service(site_info: SiteInfo):
 @router.post("/service/remove")
 def remove_docker_service(site: SiteInfo):
     client = docker.from_env()
+    if settings.SITE_RUNTIME == "kubernetes":
+        kubernetes_sites.remove_site(client, site)
+        return {}
     service = services.find_service_by_name(client, str(site))
     if service is not None:
         with contextlib.suppress(docker.errors.NotFound):

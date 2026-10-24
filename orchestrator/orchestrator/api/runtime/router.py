@@ -6,14 +6,24 @@ import json
 
 import docker.errors
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from kubernetes.client.exceptions import ApiException
+from kubernetes.config import ConfigException
 from pydantic import BaseModel, Field, ValidationError
 
+from orchestrator import settings
 from orchestrator.security import credential_valid
 
+from ..kubernetes import runtime as kubernetes_runtime
 from . import services
 
 router = APIRouter()
 MAX_LIFETIME = 3600
+BACKEND_ERRORS = (docker.errors.DockerException, ApiException, ConfigException)
+
+
+def backend():
+    """The module providing status, logs and terminals for the configured site runtime."""
+    return kubernetes_runtime if settings.SITE_RUNTIME == "kubernetes" else services
 
 
 class RuntimeRequest(BaseModel):
@@ -28,7 +38,7 @@ def inspect_runtime(data, callback):
         return callback(client, data.site_id)
     except services.RuntimeUnavailable as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
-    except docker.errors.DockerException as error:
+    except BACKEND_ERRORS as error:
         raise HTTPException(status_code=503, detail="The site's runtime is unavailable.") from error
     finally:
         if client is not None:
@@ -37,13 +47,13 @@ def inspect_runtime(data, callback):
 
 @router.post("/status")
 def status(data: RuntimeRequest):
-    return inspect_runtime(data, services.runtime_status)
+    return inspect_runtime(data, backend().runtime_status)
 
 
 @router.post("/logs")
 def logs(data: RuntimeRequest):
     return inspect_runtime(
-        data, lambda client, site_id: services.runtime_logs(client, site_id, data.tail)
+        data, lambda client, site_id: backend().runtime_logs(client, site_id, data.tail)
     )
 
 
@@ -99,7 +109,7 @@ async def terminal(websocket: WebSocket, site_id: int):
             raise ValueError("Terminal options are too large")
         options = services.TerminalOptions.model_validate_json(raw_options)
         client = await asyncio.to_thread(services.docker_client)
-        session = await asyncio.to_thread(services.TerminalSession, client, site_id, options)
+        session = await asyncio.to_thread(backend().TerminalSession, client, site_id, options)
         await websocket.send_json({"type": "ready"})
 
         tasks = [
@@ -112,7 +122,7 @@ async def terminal(websocket: WebSocket, site_id: int):
         ValidationError,
         TimeoutError,
         services.RuntimeUnavailable,
-        docker.errors.DockerException,
+        *BACKEND_ERRORS,
         OSError,
     ):
         with contextlib.suppress(WebSocketDisconnect, RuntimeError):

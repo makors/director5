@@ -88,6 +88,19 @@ class UpdateSafety(unittest.TestCase):
         for service in config['services'].values():
             self.assertEqual(set(service), {'image'})
 
+    def test_kubernetes_overlay_is_kept_before_the_image_override(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'state').mkdir()
+            self.assertEqual(updater.compose_files(root), ['-f', str(root / 'compose.yaml')])
+            (root / 'compose.kubernetes.yaml').touch()
+            (root / 'state/application-image.yaml').touch()
+            self.assertEqual(updater.compose_files(root), [
+                '-f', str(root / 'compose.yaml'),
+                '-f', str(root / 'compose.kubernetes.yaml'),
+                '-f', str(root / 'state/application-image.yaml'),
+            ])
+
     def test_superseded_commit_is_rejected(self):
         response = io.BytesIO(b'{"sha":"' + b'b' * 40 + b'"}')
         with patch.object(updater.urllib.request, 'urlopen', return_value=response):

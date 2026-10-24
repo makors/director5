@@ -31,13 +31,10 @@ def find_service_by_name(client: docker.DockerClient, service_name: str) -> Dock
     return filtered[0]
 
 
-def shared_swarm_params(site: SiteInfo) -> dict[str, Any]:
-    """Creates the parameters common to all Docker Swarm services & containers."""
-    env = site.container_env()
-    host_site_dir = site.directory_path(on_host=True)
-
+def prepare_site_directory(site: SiteInfo) -> None:
+    """Create the home and public directories every site runtime mounts."""
     # DEV ENV: We have to use our bind mount to create the dir on the
-    # host machine, so we can't use host_site_dir
+    # host machine, so we can't use the host path
     # TODO: this is hacky, our dev environment should not leak into production code
     site_dir = site.directory_path()
     root = site_dir / ".home"
@@ -51,6 +48,13 @@ def shared_swarm_params(site: SiteInfo) -> dict[str, Any]:
     else:
         # Nginx workers need to traverse a new public directory even with a private umask.
         public_dir.chmod(0o755)
+
+
+def shared_swarm_params(site: SiteInfo) -> dict[str, Any]:
+    """Creates the parameters common to all Docker Swarm services & containers."""
+    env = site.container_env()
+    host_site_dir = site.directory_path(on_host=True)
+    prepare_site_directory(site)
 
     if site.type_ == "dynamic":
         image = str(site)

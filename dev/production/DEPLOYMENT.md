@@ -224,3 +224,51 @@ intentional. Local safety checks require no server or Docker:
 python3 -m unittest discover -s dev/production/tests -v
 bash -n dev/production/install-deploy-access.sh
 ```
+
+## Kata Containers on Kubernetes
+
+Director can run each hosted site in its own Kata Containers VM, scheduled by a
+single-node k3s cluster on the same server. This is opt-in: until it is enabled the
+Orchestrator keeps using Docker Swarm, and application deployments change nothing.
+Kata needs hardware virtualization, so `/dev/kvm` must exist on the server.
+
+What changes and what stays:
+
+- Sites become Kubernetes Deployments in the `director-sites` namespace, with
+  `runtimeClassName` set to the Kata runtime class. Each site keeps its files at
+  `/data/sites`, mounted into the VM, and its existing run script, environment,
+  resource limits and routes.
+- Terminals and SQL clients become disposable Kata pods that only mount the site's
+  directory and are deleted when the session ends.
+- Images are still built with Docker, then pushed to a registry on `127.0.0.1:5000`.
+  Pods pull them by digest, so each deploy runs the exact build it just made.
+- Traefik, TLS, the Manager and the databases stay in Docker Compose. Traefik reads
+  Kubernetes routes in addition to Swarm labels, so sites can move one at a time.
+- Site databases keep their host names. Compose publishes them on the Docker bridge
+  address only, and same-named Kubernetes Services point there.
+- The Kubernetes API (6443) and kubelet (10250) are blocked on the public interface.
+
+To enable it:
+
+1. Copy the repository's `dev/production` directory to the server and run
+   `sudo ./install.sh` from its `kubernetes` directory. It installs k3s, Kata and
+   Traefik's route definitions, then checks that a test pod really boots in a Kata
+   VM (its kernel must differ from the host's). It writes access tokens to
+   `state/kubernetes`, copies `compose.kubernetes.yaml` into
+   `/opt/director5-production`, and adds `KUBERNETES_RUNTIME_CLASS` and
+   `DIRECTOR_DOCKER_GATEWAY` to `.env`.
+1. Add `COMPOSE_FILE=compose.yaml:compose.kubernetes.yaml` to `.env`, then run
+   `docker compose --env-file .env up -d registry site-postgres mysql orchestrator traefik`.
+   The application updater includes `compose.kubernetes.yaml` whenever the file
+   exists; reinstall it with `install-deploy-access.sh` so the installed copy has
+   this behavior.
+1. Move one site with
+   `docker compose --env-file .env exec manager python manage.py redeploy_sites <id>`.
+   Its next deploy creates the pod and route, then removes the Swarm service.
+   Check its website, logs, terminal and database before continuing.
+1. Run `redeploy_sites` with no ids to move the remaining sites.
+
+To roll back, remove `COMPOSE_FILE` from `.env`, rerun the `docker compose up`
+command above, and run `redeploy_sites` again: each site gets a Swarm service back.
+Then delete the leftover objects with
+`k3s kubectl delete deployment,service,ingressroute,middleware -n director-sites -l app.kubernetes.io/managed-by=director`.

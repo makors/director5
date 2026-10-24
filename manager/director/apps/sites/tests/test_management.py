@@ -539,3 +539,16 @@ def test_superuser_can_read_metrics_from_unlisted_ip(client, admin, settings):
     response = client.get(reverse("sites:metrics"), REMOTE_ADDR="198.51.100.4")
     assert response.status_code == 200
     assert b"director_sites_failed_actions 0" in response.content
+
+
+def test_redeploy_sites_queues_rebuilds_and_skips_busy_sites(site):
+    from django.core.management import call_command
+
+    busy = Site.objects.create(name="busy-site", mode="static", purpose="project")
+    busy.start_operation("restart_site")
+    with patch.object(tasks.rebuild_docker_image, "delay") as delay:
+        call_command("redeploy_sites")
+    queued = Operation.objects.get(site=site)
+    assert queued.ty == "fix_site"
+    delay.assert_called_once_with(queued.id)
+    assert Operation.objects.get(site=busy).ty == "restart_site"

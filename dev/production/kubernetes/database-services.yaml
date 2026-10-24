@@ -1,0 +1,52 @@
+# Keep the database host names sites already use. The databases stay in Docker Compose;
+# compose.kubernetes.yaml publishes them on the host's Docker bridge address, which
+# install.sh substitutes for DOCKER_GATEWAY below.
+apiVersion: v1
+kind: Service
+metadata:
+  name: director-site-postgres
+  namespace: director-sites
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: director-site-postgres
+  namespace: director-sites
+  labels:
+    kubernetes.io/service-name: director-site-postgres
+addressType: IPv4
+ports:
+  - name: postgres
+    port: 5432
+endpoints:
+  - addresses: ["DOCKER_GATEWAY"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: director-site-mysql
+  namespace: director-sites
+spec:
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: director-site-mysql
+  namespace: director-sites
+  labels:
+    kubernetes.io/service-name: director-site-mysql
+addressType: IPv4
+ports:
+  - name: mysql
+    port: 3306
+endpoints:
+  - addresses: ["DOCKER_GATEWAY"]

@@ -1,0 +1,69 @@
+# Opt-in overlay that runs hosted sites on Kubernetes (k3s) with Kata Containers.
+# Enable it only after kubernetes/install.sh has succeeded, by adding to .env:
+#   COMPOSE_FILE=compose.yaml:compose.kubernetes.yaml
+# The application updater includes this file automatically when it exists in
+# /opt/director5-production. See DEPLOYMENT.md, "Kata Containers on Kubernetes".
+
+x-kubernetes-access: &kubernetes-access
+  KUBERNETES_SERVICE_HOST: host.docker.internal
+  KUBERNETES_SERVICE_PORT: "6443"
+
+services:
+  registry:
+    # Built site images are pushed here by the Orchestrator and pulled by k3s.
+    image: registry:2.8.3
+    restart: unless-stopped
+    ports: ["127.0.0.1:5000:5000"]
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    volumes:
+      - ./state/registry:/var/lib/registry
+
+  # Site pods reach the databases through the host's Docker bridge address, which is
+  # not reachable from outside the server (see kubernetes/database-services.yaml).
+  site-postgres:
+    ports: ["${DIRECTOR_DOCKER_GATEWAY:?Run kubernetes/install.sh}:5432:5432"]
+
+  mysql:
+    ports: ["${DIRECTOR_DOCKER_GATEWAY:?Run kubernetes/install.sh}:3306:3306"]
+
+  orchestrator:
+    environment:
+      <<: *kubernetes-access
+      DIRECTOR_SITE_RUNTIME: kubernetes
+      KUBERNETES_RUNTIME_CLASS: ${KUBERNETES_RUNTIME_CLASS:-kata}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes:
+      # A namespaced service-account token; the Kubernetes client reads it as in-cluster config.
+      - ./state/kubernetes/orchestrator:/var/run/secrets/kubernetes.io/serviceaccount:ro
+    depends_on:
+      registry: {condition: service_started}
+
+  traefik:
+    # Same as compose.yaml plus the Kubernetes CRD provider. Compose replaces, rather
+    # than merges, command lists, so the full list is repeated here.
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.asdefault=true
+      - --entrypoints.websecure.http.tls=true
+      - --entrypoints.websecure.http.tls.certresolver=letsencrypt
+      - --providers.file.filename=/etc/traefik/director.yml
+      - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --providers.swarm.network=director-sites
+      - --providers.swarm.exposedbydefault=true
+      - '--providers.swarm.constraints=Label(`traefik.swarm.network`, `director-sites`)'
+      - --providers.kubernetescrd.namespaces=director-sites
+      - --providers.kubernetescrd.allowcrossnamespace=false
+      - --certificatesresolvers.letsencrypt.acme.email=director@makors.xyz
+      - --certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --api.dashboard=false
+      - --log.level=INFO
+    environment:
+      <<: *kubernetes-access
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes:
+      - ./state/kubernetes/traefik:/var/run/secrets/kubernetes.io/serviceaccount:ro
