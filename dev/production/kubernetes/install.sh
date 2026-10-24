@@ -159,7 +159,7 @@ cat <<EOF
 k3s and Kata are ready. No site has moved yet. To switch Director to Kubernetes:
 
   cd $PRODUCTION
-  echo 'COMPOSE_FILE=compose.yaml:compose.kubernetes.yaml' >> .env
+  echo 'COMPOSE_FILE=compose.yaml:compose.kubernetes.yaml:state/application-image.yaml' >> .env
   docker compose --env-file .env up -d registry site-postgres mysql orchestrator traefik
   docker compose --env-file .env exec manager python manage.py redeploy_sites <site id>
 

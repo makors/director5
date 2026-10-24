@@ -257,7 +257,8 @@ To enable it:
    `state/kubernetes`, copies `compose.kubernetes.yaml` into
    `/opt/director5-production`, and adds `KUBERNETES_RUNTIME_CLASS` and
    `DIRECTOR_DOCKER_GATEWAY` to `.env`.
-1. Add `COMPOSE_FILE=compose.yaml:compose.kubernetes.yaml` to `.env`, then run
+1. Add `COMPOSE_FILE=compose.yaml:compose.kubernetes.yaml:state/application-image.yaml`
+   to `.env` (the last file pins the deployed application image, as the updater does), then run
    `docker compose --env-file .env up -d registry site-postgres mysql orchestrator traefik`.
    The application updater includes `compose.kubernetes.yaml` whenever the file
    exists; reinstall it with `install-deploy-access.sh` so the installed copy has
