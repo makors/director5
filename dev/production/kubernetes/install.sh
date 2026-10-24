@@ -44,6 +44,11 @@ fi
 systemctl restart k3s
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 kubectl() { k3s kubectl "$@"; }
+# The node registers a few seconds after k3s starts; waiting on zero nodes fails at once.
+for _ in $(seq 90); do
+    [[ -n $(kubectl get nodes -o name 2>/dev/null) ]] && break
+    sleep 2
+done
 kubectl wait --for=condition=Ready node --all --timeout=180s
 
 echo '==> Firewall: keep the Kubernetes API and kubelet off the public interface'
