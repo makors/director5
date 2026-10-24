@@ -6,11 +6,11 @@
   <div class="dt-page dt-project-page">
     {% include "sites/partials/site_header.html" %}
     {% include "sites/partials/navigation.html" with active_tab="logs" can_edit=True %}
-    <div class="dt-page-heading"><h2>Logs</h2></div>
+    <div class="dt-page-heading dt-context-heading"><h2>Logs</h2></div>
     <p class="dt-muted">Recent service output. Updates every five seconds; output is limited to 200 lines and 64 KiB.</p>
-    <div id="runtime-log-output" hx-get="{% url 'sites:logs_output' site.id %}" hx-trigger="load, every 5s" hx-swap="innerHTML" aria-live="off">
+    <div id="runtime-log-output" class="dt-log-panel" hx-get="{% url 'sites:logs_output' site.id %}" hx-trigger="load, every 5s" hx-swap="innerHTML" aria-live="off">
       <p class="dt-muted">Loading logs…</p>
     </div>
-    <p><a href="{% url 'sites:logs_output' site.id %}" target="_blank" rel="noopener noreferrer">Open latest logs</a></p>
+    <p class="dt-terminal-ssh-link"><a class="dt-inline-link" href="{% url 'sites:logs_output' site.id %}" target="_blank" rel="noopener noreferrer">Open latest logs</a></p>
   </div>
 {% endblock main %}

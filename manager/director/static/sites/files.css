@@ -73,8 +73,8 @@
 	border-top: 1px solid var(--dt-border);
 }
 .dt-file-table td:nth-child(2) {
-	font-family: "Geist Mono", ui-monospace, monospace;
 	color: var(--dt-muted);
+	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
 .dt-file-table td:last-child {
@@ -84,8 +84,16 @@
 .dt-file-name {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 	min-height: 40px;
+}
+.dt-file-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	color: var(--dt-muted);
+}
+.dt-file-icon[data-type="directory"] {
+	color: var(--dt-brand);
 }
 .dt-file-selected {
 	background: var(--dt-brand-tint);

@@ -19,7 +19,7 @@
         </dl>
         {% if database.provisioned %}
           <div class="dt-form-field"><label for="database-url">Connection URL</label><input id="database-url" class="dt-input dt-code-input" value="{{ database.redacted_db_url }}" readonly></div>
-          <details><summary>Show connection credentials</summary>
+          <details class="dt-disclosure"><summary>Show connection credentials</summary>
             <div class="dt-form-field"><label for="database-password">Password</label><input id="database-password" class="dt-input" value="{{ database.password }}" readonly></div>
             <div class="dt-form-field"><label for="database-full-url">Full connection URL</label><input id="database-full-url" class="dt-input dt-code-input" value="{{ connection_url }}" readonly></div>
           </details>
@@ -38,7 +38,7 @@
         </form>
       </section>
       <section class="dt-project-block dt-project-delete">
-        <details><summary><strong>Delete database</strong></summary>
+        <details class="dt-disclosure"><summary><strong>Delete database</strong></summary>
           <p>The database, its tables, and its user account will be permanently removed. Site files are kept.</p>
           <form method="post" data-dt-form action="{% url 'databases:delete' site.id %}">
             {% csrf_token %}

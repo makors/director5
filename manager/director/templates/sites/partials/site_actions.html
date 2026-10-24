@@ -6,7 +6,7 @@
       <form method="post" data-dt-form action="{% url 'sites:restart' site.id %}">
         {% csrf_token %}
         <input type="hidden" name="tab" value="{{ dashboard_tab }}">
-        <button class="dt-btn-secondary" data-dashboard-focus="restart" type="submit" {% if operation %}disabled{% endif %}>Restart site</button>
+        <button class="dt-btn-outline" data-dashboard-focus="restart" type="submit" {% if operation %}disabled{% endif %}>Restart site</button>
       </form>
     </div>
     <div class="dt-setting-row">
@@ -23,7 +23,7 @@
   </section>
 
   <section class="dt-settings-section dt-project-delete" aria-labelledby="delete-site-heading">
-    <details id="delete-site-disclosure">
+    <details id="delete-site-disclosure" class="dt-disclosure">
       <summary class="dt-project-delete-summary" data-dashboard-focus="delete-summary"><strong id="delete-site-heading">Delete site</strong></summary>
       <form method="post" data-dt-form action="{% url 'sites:delete' site.id %}" class="dt-project-delete-form">
         {% csrf_token %}

@@ -319,6 +319,10 @@
 		});
 		el("file-folder-download").href = url("archive", state.path);
 	}
+	const FOLDER_ICON =
+		'<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.75 4.25c0-.69.56-1.25 1.25-1.25h3.1l1.4 1.5H13c.69 0 1.25.56 1.25 1.25v6.5c0 .69-.56 1.25-1.25 1.25H3c-.69 0-1.25-.56-1.25-1.25v-8Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>';
+	const FILE_ICON =
+		'<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.75 2.75c0-.55.45-1 1-1h4.5l3 3v8.5c0 .55-.45 1-1 1h-6.5c-.55 0-1-.45-1-1v-10.5Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M9 1.75V5h3.25" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>';
 	function size(bytes) {
 		if (bytes < 1024) return `${bytes} B`;
 		return bytes < 1048576
@@ -347,8 +351,11 @@
 			const button = node("button");
 			button.type = "button";
 			button.className = "dt-file-name";
-			const icon = node("span", entry.type === "directory" ? "▸" : "·");
+			const icon = node("span");
+			icon.className = "dt-file-icon";
+			icon.dataset.type = entry.type;
 			icon.setAttribute("aria-hidden", "true");
+			icon.innerHTML = entry.type === "directory" ? FOLDER_ICON : FILE_ICON;
 			button.append(icon, node("span", entry.name));
 			if (entry.type === "directory") button.onclick = () => run(() => load(entry.path));
 			else if (entry.type === "file") button.onclick = () => run(() => open(entry.path));

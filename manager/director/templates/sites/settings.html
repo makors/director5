@@ -71,7 +71,7 @@
               {% if can_edit and domain.status != 'blocked' and domain.status != 'removing' %}
                 <form method="post" data-dt-form action="{% url 'sites:settings-domain-remove' site.id domain.id %}">
                   {% csrf_token %}
-                  <button class="dt-btn-outline" type="submit" data-submitting-text="Removing…" {% if not can_change_routing %}disabled{% endif %} aria-label="Remove domain {{ domain.domain }}">Remove</button>
+                  <button class="dt-btn-outline dt-btn-sm" type="submit" data-submitting-text="Removing…" {% if not can_change_routing %}disabled{% endif %} aria-label="Remove domain {{ domain.domain }}">Remove</button>
                 </form>
               {% endif %}
             </li>
@@ -94,7 +94,7 @@
               {% if can_edit %}
                 <form method="post" data-dt-form action="{% url 'sites:settings-member-remove' site.id member.id %}">
                   {% csrf_token %}
-                  <button class="dt-btn-outline" type="submit" data-submitting-text="Removing…" {% if members|length <= 1 %}disabled{% endif %} aria-label="Remove member {{ member.username }}">Remove</button>
+                  <button class="dt-btn-outline dt-btn-sm" type="submit" data-submitting-text="Removing…" {% if members|length <= 1 %}disabled{% endif %} aria-label="Remove member {{ member.username }}">Remove</button>
                 </form>
               {% endif %}
             </li>
