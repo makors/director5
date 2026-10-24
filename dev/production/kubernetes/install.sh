@@ -81,14 +81,26 @@ helm upgrade --install kata-deploy \
     --namespace kube-system \
     --set k8sDistribution=k3s \
     --wait --timeout 10m
+# kata-deploy's node agent creates the runtime classes once it has installed Kata,
+# which can be after Helm reports the release as deployed.
 runtime_class=
-for candidate in kata kata-qemu kata-clh; do
-    if kubectl get runtimeclass "$candidate" >/dev/null 2>&1; then
-        runtime_class=$candidate
-        break
-    fi
+for _ in $(seq 60); do
+    classes=$(kubectl get runtimeclass -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep '^kata' || true)
+    for candidate in kata kata-qemu kata-clh $classes; do
+        if grep -qx "$candidate" <<<"$classes"; then
+            runtime_class=$candidate
+            break 2
+        fi
+    done
+    sleep 5
 done
-[[ -n $runtime_class ]] || { echo 'kata-deploy created no Kata runtime class.' >&2; exit 1; }
+if [[ -z $runtime_class ]]; then
+    echo 'kata-deploy created no Kata runtime class. Its node agent reported:' >&2
+    kubectl get runtimeclass >&2 || true
+    kubectl -n kube-system get pods -o wide | grep -i kata >&2 || true
+    kubectl -n kube-system logs daemonset/kata-deploy --tail=40 >&2 || true
+    exit 1
+fi
 echo "Using runtime class $runtime_class"
 
 # A Kata pod boots its own guest kernel, so its kernel release differs from the host's.
