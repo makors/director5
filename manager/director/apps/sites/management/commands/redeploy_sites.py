@@ -26,7 +26,8 @@ class Command(BaseCommand):
         queued = skipped = 0
         for site in sites:
             try:
-                operation = site.start_operation("fix_site")
+                # A failed operation is replaced, as the Retry button does; running ones are left alone.
+                operation = site.start_operation("fix_site", replace_failed=True)
             except OperationInProgressError:
                 self.stdout.write(f"Skipped {site.name}: an operation is already in progress.")
                 skipped += 1

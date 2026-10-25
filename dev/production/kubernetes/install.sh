@@ -62,6 +62,9 @@ After=network-online.target k3s.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+# Director's Compose containers reach the API through Docker's bridges, even where the
+# host's own firewall drops other inbound traffic.
+ExecStart=/bin/sh -c 'for interface in docker0 docker_gwbridge br+; do iptables -C INPUT -i \$\$interface -p tcp --dport 6443 -j ACCEPT 2>/dev/null || iptables -I INPUT -i \$\$interface -p tcp --dport 6443 -j ACCEPT; done'
 ExecStart=/bin/sh -c 'for port in 6443 10250; do iptables -C INPUT -i $public_interface -p tcp --dport \$\$port -j DROP 2>/dev/null || iptables -I INPUT -i $public_interface -p tcp --dport \$\$port -j DROP; done'
 
 [Install]

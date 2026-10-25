@@ -552,3 +552,14 @@ def test_redeploy_sites_queues_rebuilds_and_skips_busy_sites(site):
     assert queued.ty == "fix_site"
     delay.assert_called_once_with(queued.id)
     assert Operation.objects.get(site=busy).ty == "restart_site"
+
+
+def test_redeploy_sites_replaces_a_failed_operation(site):
+    from django.core.management import call_command
+
+    failed_operation(site, kind="fix_site")
+    with patch.object(tasks.rebuild_docker_image, "delay") as delay:
+        call_command("redeploy_sites", str(site.id))
+    operation = Operation.objects.get(site=site)
+    assert not operation.action_set.exists()
+    delay.assert_called_once_with(operation.id)
